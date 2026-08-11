@@ -46,7 +46,7 @@
         const SPLASH_BG_IMAGE = "https://static.vecteezy.com/system/resources/thumbnails/038/813/435/small/ai-generated-beautifulgraphy-for-laundry-advertising-free-photo.jpeg"; 
         const LOGIN_BG_IMAGE = "https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTAzL2FuZ3VzdGVvd19waG90b19vZl9jbG90aGVzX3dhc2hpbmdfbWFjaGluZV9pbl9taW5pbWFsX2xhdW5kcnlfYl8wYTg4MjY5ZC04NTRhLTQ5ODUtYTQ4ZC1lNGUzZDdmYzMyMDJfMS5qcGc.jpg"; 
 
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbxR1PppWpHWrvku-14G-vfYUAvTy13S8N69iZfjNfAhZKs2SHU3d6uQNjEJKm7aWlI/exec"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxDC_IM-S928LESR3Uj_bSizoC4-AVuCYuRIvzOm_2C2j0klnhFnMJZJpyRf66x2J1I/exec"; 
 
         const formatThousand = (val) => {
             if (val === undefined || val === null || val === '') return '';
