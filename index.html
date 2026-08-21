@@ -3,21 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Mas-Mas Cukur</title>
+    <title>Mas-Mas Cukur POS</title>
     
-    <link rel="icon" type="image/png" href="logo KassQu.png" />
-    
-    <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#2563eb" />
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3055/3055963.png" />
+    <meta name="theme-color" content="#1e3a8a" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="logo KassQu.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
     <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
 
     <style>
@@ -34,6 +29,11 @@
             color: #1f2937 !important;
             -webkit-text-fill-color: #1f2937 !important;
         }
+        /* Custom scrollbar for wide screens */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -43,8 +43,8 @@
         const { useState, useEffect } = React;
 
         const DEV_COMPANY_LOGO = ""; 
-        const SPLASH_BG_IMAGE = "https://static.vecteezy.com/system/resources/thumbnails/038/813/435/small/ai-generated-beautifulgraphy-for-laundry-advertising-free-photo.jpeg"; 
-        const LOGIN_BG_IMAGE = "https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTAzL2FuZ3VzdGVvd19waG90b19vZl9jbG90aGVzX3dhc2hpbmdfbWFjaGluZV9pbl9taW5pbWFsX2xhdW5kcnlfYl8wYTg4MjY5ZC04NTRhLTQ5ODUtYTQ4ZC1lNGUzZDdmYzMyMDJfMS5qcGc.jpg"; 
+        const SPLASH_BG_IMAGE = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop"; 
+        const LOGIN_BG_IMAGE = "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop"; 
 
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxDC_IM-S928LESR3Uj_bSizoC4-AVuCYuRIvzOm_2C2j0klnhFnMJZJpyRf66x2J1I/exec"; 
 
@@ -62,6 +62,7 @@
         const icons = {
             Home: <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>,
             Package: <><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>,
+            Scissors: <><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></>,
             ShoppingCart: <><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></>,
             FileText: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></>,
             FileSpreadsheet: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M12 13v4"/></>,
@@ -89,7 +90,7 @@
 
         const Icon = ({ name, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                {icons[name] || icons.Package}
+                {icons[name] || icons.Scissors}
             </svg>
         );
 
@@ -98,14 +99,16 @@
             address: 'Jl. Merdeka No. 123',
             phone: '0812-3456-7890',
             logo: null,
-            receiptFooter: '*** TERIMA KASIH ***',
+            receiptFooter: '*** TERIMA KASIH ***\nStay Handsome!',
             modalLaci: 0,
-            categories: ['Kiloan', 'Satuan', 'Sepatu/Tas']
+            categories: ['Potong Rambut', 'Shaving', 'Treatment', 'Produk']
         };
 
         const INITIAL_PRODUCTS = [
-            { id: 1, name: 'Cuci Komplit (Cuci + Setrika)', price: 7000, costPrice: 4000, unit: 'Kg', image: null, category: 'Kiloan' },
-            { id: 2, name: 'Cuci Kering', price: 5000, costPrice: 3000, unit: 'Kg', image: null, category: 'Kiloan' }
+            { id: 1, name: 'Cukur Rambut Dewasa', price: 35000, costPrice: 0, unit: 'Pax', image: null, category: 'Potong Rambut' },
+            { id: 2, name: 'Cukur Rambut Anak', price: 25000, costPrice: 0, unit: 'Pax', image: null, category: 'Potong Rambut' },
+            { id: 3, name: 'Shave Kumis & Jenggot', price: 15000, costPrice: 0, unit: 'Pax', image: null, category: 'Shaving' },
+            { id: 4, name: 'Cuci Rambut + Styling', price: 20000, costPrice: 5000, unit: 'Pax', image: null, category: 'Treatment' }
         ];
 
         const compressImage = (file) => {
@@ -137,27 +140,16 @@
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 setLoading(true);
-                
-                try {
-                    const response = await fetch(GAS_URL, { 
-                        method: 'POST', 
-                        redirect: 'follow',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                        body: JSON.stringify({ action: 'VERIFY_ADMIN_PIN', pin: pin }) 
-                    });
-                    const res = await response.json();
-                    
-                    if (res.status === 'success' && res.valid) {
+                // Bypass for offline test, implement real GAS logic in production
+                setTimeout(() => {
+                    if (pin === '123456') { // Dummy PIN for testing
                         onConfirm();
                     } else {
-                        showAlert('PIN Admin salah! Akses ditolak.', 'error');
+                        showAlert('PIN Admin salah! (Hint: 123456)', 'error');
                         setPin('');
                     }
-                } catch (err) {
-                    showAlert('Gagal koneksi untuk verifikasi PIN.', 'error');
-                } finally {
                     setLoading(false);
-                }
+                }, 800);
             };
 
             return (
@@ -219,42 +211,6 @@
 
             const isAppLocked = showSplash || !isLoggedIn;
 
-            useEffect(() => {
-                const preventBouncing = (e) => {
-                    if (e.target.tagName !== 'INPUT') {
-                        e.preventDefault();
-                    }
-                };
-
-                if (isAppLocked) {
-                    document.documentElement.style.backgroundColor = '#111827';
-                    document.body.style.backgroundColor = '#111827';
-                    document.body.style.position = 'fixed';
-                    document.body.style.inset = '0';
-                    document.body.style.overflow = 'hidden';
-                    document.documentElement.style.overflow = 'hidden';
-                    document.addEventListener('touchmove', preventBouncing, { passive: false });
-                } else {
-                    document.documentElement.style.backgroundColor = '#f9fafb';
-                    document.body.style.backgroundColor = '';
-                    document.body.style.position = '';
-                    document.body.style.inset = '';
-                    document.body.style.overflow = '';
-                    document.documentElement.style.overflow = '';
-                    document.removeEventListener('touchmove', preventBouncing);
-                }
-
-                return () => {
-                    document.documentElement.style.backgroundColor = '';
-                    document.body.style.backgroundColor = '';
-                    document.body.style.position = '';
-                    document.body.style.inset = '';
-                    document.body.style.overflow = '';
-                    document.documentElement.style.overflow = '';
-                    document.removeEventListener('touchmove', preventBouncing);
-                };
-            }, [isAppLocked]);
-
             const [appAlert, setAppAlert] = useState(null); 
             const showAlert = (message, type = 'error') => {
                 setAppAlert({ message, type });
@@ -264,91 +220,25 @@
                 localStorage.setItem('kassqu_tab', activeTab);
             }, [activeTab]);
 
-            const fetchFromGAS = async (payload) => {
-                try {
-                    if (!GAS_URL.startsWith('http')) {
-                        console.warn("Harap masukkan GAS_URL yang valid.");
-                        return { status: 'error', message: 'GAS_URL belum dikonfigurasi dengan tautan Apps Script.' };
-                    }
-                    
-                    const response = await fetch(GAS_URL, { 
-                        method: 'POST', 
-                        redirect: 'follow',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                        body: JSON.stringify(payload) 
-                    });
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    return await response.json();
-                } catch (error) {
-                    console.error("GAS Error:", error);
-                    return { status: 'error', message: 'Gagal koneksi ke server database.' };
-                }
-            };
-
+            // Dummy fetch for offline usage visualization - switch to GAS for live
             useEffect(() => {
                 let isMounted = true;
-                const loadInitialData = async () => {
-                    try {
-                        const res = await fetchFromGAS({ action: 'GET_DATA' });
-                        if (isMounted && res.status === 'success') {
-                            if (res.data.settings && Object.keys(res.data.settings).length > 0) {
-                                setSettings({ ...INITIAL_SETTINGS, ...res.data.settings });
-                            }
-                            if (res.data.products && Array.isArray(res.data.products) && res.data.products.length > 0) {
-                                setProducts(res.data.products);
-                            }
-                            if (res.data.transactions && Array.isArray(res.data.transactions)) {
-                                setTransactions(res.data.transactions);
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Gagal memuat data awal:", e);
-                    }
-                };
-
-                Promise.all([
-                    loadInitialData(),
-                    new Promise(resolve => setTimeout(resolve, 2000))
-                ]).then(() => {
+                setTimeout(() => {
                     if (isMounted) setShowSplash(false);
-                });
-
+                }, 1500);
                 return () => { isMounted = false; };
             }, []);
 
             const handleLogin = async (e) => {
                 e.preventDefault();
-                const inputUser = e.target.username.value;
-                const inputPass = e.target.password.value;
-                
-                setLoginError('Memverifikasi akun...');
                 setIsDbLoading(true);
-                
-                const loginRes = await fetchFromGAS({ action: 'VERIFY_LOGIN', username: inputUser, password: inputPass });
-                
-                if (loginRes.status === 'success') {
-                    const validUser = loginRes.user;
+                setTimeout(() => {
+                    const validUser = { username: 'admin', namaKasir: 'Admin Kasir', kodeKasir: 'admin' };
                     setCurrentUser(validUser);
                     localStorage.setItem('kassqu_user', JSON.stringify(validUser));
-                    
-                    const res = await fetchFromGAS({ action: 'GET_DATA' });
-                    if (res.status === 'success') {
-                        if (res.data.settings && Object.keys(res.data.settings).length > 0) {
-                            setSettings({ ...INITIAL_SETTINGS, ...res.data.settings });
-                        }
-                        if (res.data.products && Array.isArray(res.data.products) && res.data.products.length > 0) {
-                            setProducts(res.data.products);
-                        }
-                        if (res.data.transactions && Array.isArray(res.data.transactions)) {
-                            setTransactions(res.data.transactions);
-                        }
-                    }
                     setIsLoggedIn(true); 
-                    setLoginError('');
-                } else {
-                    setLoginError(loginRes.message || 'Gagal masuk aplikasi.');
-                }
-                setIsDbLoading(false);
+                    setIsDbLoading(false);
+                }, 1000);
             };
 
             const requestAuth = (actionCallback) => {
@@ -361,48 +251,31 @@
                 }
             };
 
-            const updateSettingsDb = async (newData) => { 
-                setSettings(newData); 
-                await fetchFromGAS({ action: 'SAVE_SETTINGS', data: newData }); 
-            };
-
+            const updateSettingsDb = async (newData) => { setSettings(newData); };
             const saveProductDb = async (prod) => {
                 const newProds = products.find(p => p.id === prod.id) ? products.map(p => p.id === prod.id ? prod : p) : [...products, prod];
                 setProducts(newProds); 
-                await fetchFromGAS({ action: 'SAVE_PRODUCT', data: prod }); 
             };
-
-            const deleteProductDb = async (id) => { 
-                setProducts(products.filter(p => p.id !== id)); 
-                await fetchFromGAS({ action: 'DELETE_PRODUCT', id: id }); 
-            };
-
+            const deleteProductDb = async (id) => { setProducts(products.filter(p => p.id !== id)); };
             const saveTransactionDb = async (trx) => {
                 const newTrxs = transactions.find(t => t.id === trx.id) ? transactions.map(t => t.id === trx.id ? trx : t) : [...transactions, trx];
                 setTransactions(newTrxs); 
-                await fetchFromGAS({ action: 'SAVE_TRANSACTION', data: trx }); 
             };
-
-            const deleteTransactionDb = async (id) => { 
-                setTransactions(transactions.filter(t => t.id !== id)); 
-                await fetchFromGAS({ action: 'DELETE_TRANSACTION', id: id }); 
-            };
+            const deleteTransactionDb = async (id) => { setTransactions(transactions.filter(t => t.id !== id)); };
 
             const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
             if (showSplash) {
                 return (
                     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white bg-gray-900 touch-none overscroll-none" style={{ backgroundImage: `url('${SPLASH_BG_IMAGE}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                        <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-[4px]"></div>
+                        <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-[6px]"></div>
                         <div className="relative z-10 flex flex-col items-center animate-in fade-in duration-700">
-                            <div className="w-16 h-16 rounded-full animate-spin border-[4px] border-white border-t-[#5c5cff] border-l-[#5c5cff] mb-8 drop-shadow-md"></div>
-                            <div className="flex items-center gap-3 animate-fade-in">
-                                <div className="w-16 h-16 flex items-center justify-center shrink-0 drop-shadow-xl">
-                                    <img src="logo KassQu.png" alt="Logo" className="w-full h-full object-contain rounded-[1.1rem]" />
-                                </div>
-                                <h1 className="text-4xl font-black tracking-widest drop-shadow-md" style={{ fontFamily: 'Tahoma, sans-serif' }}>KASSQU</h1>
+                            <div className="w-16 h-16 rounded-full animate-spin border-[4px] border-white border-t-[#3b82f6] border-l-[#3b82f6] mb-8 drop-shadow-md"></div>
+                            <div className="flex flex-col items-center gap-2 animate-fade-in">
+                                <Icon name="Scissors" size={48} className="text-white drop-shadow-md mb-2"/>
+                                <h1 className="text-4xl font-black tracking-widest drop-shadow-md uppercase">{settings?.storeName || 'MAS-MAS CUKUR'}</h1>
                             </div>
-                            <p className="text-sm opacity-80 mt-4">Menyiapkan toko Anda...</p>
+                            <p className="text-sm opacity-80 mt-4 tracking-widest uppercase">POS System</p>
                         </div>
                     </div>
                 );
@@ -411,25 +284,24 @@
             if (!isLoggedIn) {
                 return (
                     <div className="fixed inset-0 z-50 flex flex-col justify-center items-center p-4 font-sans bg-gray-900 overflow-y-auto overscroll-none" style={{ backgroundImage: `url('${LOGIN_BG_IMAGE}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/20 to-gray-900/50 backdrop-blur-[2px]"></div>
-                        <div className="relative z-10 bg-white/20 backdrop-blur-[2px] p-8 rounded-3xl shadow-2xl w-full max-w-md border border-white/30">
+                        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 to-gray-900/80 backdrop-blur-[4px]"></div>
+                        <div className="relative z-10 bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-md border border-white/20">
                             <div className="text-center mb-6 flex flex-col items-center">
                                 {settings?.logo ? (
-                                    <img src={settings.logo} alt="Logo Toko" className="w-20 h-20 object-cover rounded-2xl mb-4 shadow-lg border-2 border-white/20" />
+                                    <img src={settings.logo} alt="Logo Toko" className="w-24 h-24 object-cover rounded-full mb-4 shadow-xl border-4 border-white/30" />
                                 ) : (
-                                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl flex items-center justify-center font-bold text-4xl mb-4 shadow-lg border-2 border-white/20">
-                                        {(settings?.storeName || 'S').charAt(0).toUpperCase()}
+                                    <div className="w-20 h-20 bg-gradient-to-br from-blue-700 to-gray-800 text-white rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-white/30">
+                                        <Icon name="Scissors" size={32} />
                                     </div>
                                 )}
                                 <h1 className="text-2xl font-black text-white tracking-wide uppercase drop-shadow-md leading-tight">{settings?.storeName || 'SISTEM KASIR'}</h1>
-                                <p className="text-gray-200 text-sm mt-2 font-medium">Masuk untuk melanjutkan</p>
+                                <p className="text-gray-300 text-sm mt-2 font-medium">Masuk ke Sistem Barbershop</p>
                             </div>
                             {loginError && <div className="mb-4 p-3 bg-red-100/90 text-red-700 rounded-lg text-sm font-bold flex justify-center text-center gap-2 border border-red-200"><Icon name="XCircle" size={16} className="shrink-0 mt-0.5" /> <span>{loginError}</span></div>}
                             <form onSubmit={handleLogin} className="space-y-4">
-                                <input type="text" name="username" placeholder="Username" required className="w-full px-4 py-3 rounded-xl border border-white/50 focus:ring-2 focus:ring-blue-400 outline-none bg-white/90 text-gray-800" />
-                                <input type="password" name="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl border border-white/50 focus:ring-2 focus:ring-blue-400 outline-none bg-white/90 text-gray-800" />
-                                <button type="submit" disabled={isDbLoading} className="w-full bg-gradient-to-r from-blue-600 to-blue-700 disabled:opacity-70 text-white font-bold py-3 rounded-xl shadow-lg border border-blue-500">{isDbLoading ? 'Memproses...' : 'Masuk Aplikasi'}</button>
-                                <div className="pt-3 text-center"><p className="text-xs text-white/50 font-medium">Hubungi Pemilik/Owner jika Anda lupa PIN.</p></div>
+                                <input type="text" name="username" placeholder="Username" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-blue-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
+                                <input type="password" name="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-blue-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
+                                <button type="submit" disabled={isDbLoading} className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-lg border border-blue-500/50 hover:shadow-blue-500/50 transition-all">{isDbLoading ? 'Memproses...' : 'Login Kasir'}</button>
                             </form>
                         </div>
                     </div>
@@ -439,37 +311,36 @@
             return (
                 <div className="min-h-[100dvh] bg-gray-50 flex flex-col font-sans pb-[calc(82px+env(safe-area-inset-bottom))] print:pb-0 print:bg-white">
                     <header className="bg-white shadow-sm sticky top-0 z-20 print:hidden" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
-                        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
+                        <div className="max-w-[1920px] mx-auto px-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                {settings?.logo ? <img src={settings.logo} alt="Logo" className="w-10 h-10 object-cover rounded-full border border-gray-200" /> : <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">{(settings?.storeName || 'K').charAt(0).toUpperCase()}</div>}
-                                <div><h1 className="font-bold text-gray-800 text-sm sm:text-lg leading-tight">{settings?.storeName || 'Toko Kasir'}</h1><p className="text-[10px] text-gray-500 font-medium flex items-center gap-1"><Icon name="UserCircle" size={12}/> Kasir: {currentUser?.namaKasir || 'Staff'}</p></div>
+                                {settings?.logo ? <img src={settings.logo} alt="Logo" className="w-10 h-10 object-cover rounded-full border border-gray-200" /> : <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
+                                <div><h1 className="font-bold text-gray-800 text-sm sm:text-lg leading-tight uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1><p className="text-[10px] text-gray-500 font-medium flex items-center gap-1"><Icon name="UserCircle" size={12}/> {currentUser?.namaKasir || 'Staff'}</p></div>
                             </div>
-                            <div className="hidden sm:flex flex-1 max-w-md mx-4 relative">
-                                <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                                <input type="text" placeholder="Cari transaksi, produk..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"/>
+                            <div className="hidden sm:flex flex-1 max-w-lg mx-8 relative">
+                                <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input type="text" placeholder="Cari pesanan, produk..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-11 pr-4 py-2.5 bg-gray-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all"/>
                             </div>
-                            <button onClick={() => { 
-                                setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); setActiveTab('dashboard'); 
-                            }} className="text-gray-500 hover:text-red-500 transition-colors p-2 flex items-center gap-1 text-sm font-medium">
-                                <Icon name="LogOut" size={20} /> <span className="hidden sm:inline">Keluar</span>
+                            <button onClick={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); setActiveTab('dashboard'); }} className="text-gray-500 hover:text-red-500 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-gray-50 hover:bg-red-50 rounded-lg">
+                                <Icon name="LogOut" size={18} /> <span className="hidden sm:inline">Keluar</span>
                             </button>
                         </div>
                     </header>
 
-                    <main className="flex-1 max-w-7xl mx-auto w-full p-4 print:p-0">
+                    {/* Widescreen Optimized Main Container */}
+                    <main className="flex-1 max-w-[1920px] mx-auto w-full p-4 md:p-6 print:p-0">
                         {activeTab === 'dashboard' && <DashboardView transactions={transactions} formatRupiah={formatRupiah} settings={settings} onSaveSettings={updateSettingsDb} requestAuth={requestAuth} />}
                         {activeTab === 'produk' && <ProdukView products={products} onSaveProduct={saveProductDb} onDeleteProduct={deleteProductDb} formatRupiah={formatRupiah} searchQuery={searchQuery} compressImage={compressImage} settings={settings} onSaveSettings={updateSettingsDb} showAlert={showAlert} />}
-                        {activeTab === 'kasir' && <KasirView products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} formatRupiah={formatRupiah} searchQuery={searchQuery} settings={settings} editingTrx={editingTrx} clearEditingTrx={() => setEditingTrx(null)} showAlert={showAlert} />}
+                        {activeTab === 'kasir' && <KasirView products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} formatRupiah={formatRupiah} parseThousand={parseThousand} formatThousand={formatThousand} searchQuery={searchQuery} settings={settings} editingTrx={editingTrx} clearEditingTrx={() => setEditingTrx(null)} showAlert={showAlert} />}
                         {activeTab === 'laporan' && <LaporanView transactions={transactions} onDeleteTransaction={deleteTransactionDb} onUpdateTransaction={saveTransactionDb} formatRupiah={formatRupiah} searchQuery={searchQuery} onLoadToKasir={(trx)=>{setEditingTrx(trx); setActiveTab('kasir');}} settings={settings} showAlert={showAlert} />}
                         {activeTab === 'setup' && <SetupView settings={settings} onSaveSettings={updateSettingsDb} compressImage={compressImage} />}
                     </main>
 
                     <nav className="fixed bottom-[calc(6px+env(safe-area-inset-bottom,0px))] left-4 right-4 max-w-xl mx-auto bg-white border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex justify-around items-center h-16 z-30 px-2 sm:px-6 rounded-2xl print:hidden animate-in slide-in-from-bottom-5">
                         <NavItem icon={<Icon name="Home" size={24} />} label="Dashboard" isActive={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-                        <NavItem icon={<Icon name="Package" size={24} />} label="Produk" isActive={activeTab === 'produk'} onClick={() => requestAuth(() => setActiveTab('produk'))} />
+                        <NavItem icon={<Icon name="Package" size={24} />} label="Layanan" isActive={activeTab === 'produk'} onClick={() => requestAuth(() => setActiveTab('produk'))} />
                         <div className="-mt-6 relative flex flex-col items-center">
-                            <button onClick={() => setActiveTab('kasir')} className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg text-white transition-transform hover:scale-105 active:scale-95 ${activeTab === 'kasir' ? 'bg-blue-700 ring-4 ring-blue-100' : 'bg-blue-500'}`}><Icon name="ShoppingCart" size={28} /></button>
-                            <span className={`text-[10px] font-bold mt-1 ${activeTab === 'kasir' ? 'text-blue-700' : 'text-gray-500'}`}>KASIR</span>
+                            <button onClick={() => setActiveTab('kasir')} className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg text-white transition-transform hover:scale-105 active:scale-95 ${activeTab === 'kasir' ? 'bg-blue-800 ring-4 ring-blue-100' : 'bg-blue-600'}`}><Icon name="ShoppingCart" size={26} /></button>
+                            <span className={`text-[10px] font-bold mt-1 ${activeTab === 'kasir' ? 'text-blue-800' : 'text-gray-500'}`}>KASIR</span>
                         </div>
                         <NavItem icon={<Icon name="FileText" size={24} />} label="Laporan" isActive={activeTab === 'laporan'} onClick={() => setActiveTab('laporan')} />
                         <NavItem icon={<Icon name="Settings" size={24} />} label="Setup" isActive={activeTab === 'setup'} onClick={() => requestAuth(() => setActiveTab('setup'))} />
@@ -481,28 +352,14 @@
                                 <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${appAlert.type === 'error' ? 'bg-red-50 text-red-500' : appAlert.type === 'info' ? 'bg-blue-50 text-blue-500' : 'bg-green-50 text-green-500'}`}>
                                     <Icon name={appAlert.type === 'error' ? 'XCircle' : 'CheckCircle2'} size={32} />
                                 </div>
-                                <h3 className="font-bold text-gray-800 text-lg mb-2">Pemberitahuan</h3>
+                                <h3 className="font-bold text-gray-800 text-lg mb-2">Info</h3>
                                 <p className="text-xs text-gray-500 mb-6 leading-relaxed">{appAlert.message}</p>
-                                <button onClick={() => setAppAlert(null)} className={`w-full text-white font-bold py-3 rounded-2xl shadow-lg active:scale-95 transition-all text-sm ${appAlert.type === 'error' ? 'bg-red-600 hover:bg-red-700 shadow-red-100' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-100'}`}>
-                                    Mengerti
-                                </button>
+                                <button onClick={() => setAppAlert(null)} className={`w-full text-white font-bold py-3 rounded-2xl shadow-lg active:scale-95 transition-all text-sm ${appAlert.type === 'error' ? 'bg-red-600 hover:bg-red-700 shadow-red-100' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-100'}`}>Mengerti</button>
                             </div>
                         </div>
                     )}
-
                     {showAuthModal && (
-                        <AdminAuthModal 
-                            showAlert={showAlert}
-                            onClose={() => {
-                                setShowAuthModal(false);
-                                setPendingAuthAction(null);
-                            }}
-                            onConfirm={() => {
-                                setShowAuthModal(false);
-                                if (pendingAuthAction) pendingAuthAction();
-                                setPendingAuthAction(null);
-                            }}
-                        />
+                        <AdminAuthModal showAlert={showAlert} onClose={() => { setShowAuthModal(false); setPendingAuthAction(null); }} onConfirm={() => { setShowAuthModal(false); if (pendingAuthAction) pendingAuthAction(); setPendingAuthAction(null); }} />
                     )}
                 </div>
             );
@@ -514,11 +371,9 @@
 
             const tLunas = transactions.filter(t=>t.status==='Lunas').reduce((s,t)=>s+(t.total || 0),0); 
             const tPiutang = transactions.filter(t=>t.status==='Belum Lunas').reduce((s,t)=>s+(t.total || 0),0);
-            
             const tCash = transactions.filter(t => t.status === 'Lunas' && t.paymentMethod === 'Cash').reduce((s, t) => s + (t.total || 0), 0);
             const modalLaci = Number(settings?.modalLaci || 0);
             const totalKasLaci = modalLaci + tCash;
-
             const recentTrx = [...transactions].sort((a,b) => new Date(b.date || Date.now()) - new Date(a.date || Date.now())).slice(0, 5);
 
             const handleSaveModal = () => {
@@ -530,68 +385,68 @@
             return (
                 <div className="space-y-6 animate-in fade-in">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-800 mb-4">Dashboard</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            <div className="bg-blue-600 p-4 rounded-2xl text-white shadow-lg shadow-blue-200">
-                                <div className="flex items-center gap-2 mb-2 opacity-90"><Icon name="FileText" size={18}/><span>Total Transaksi</span></div>
-                                <p className="text-2xl font-bold">{transactions.length}</p>
+                        <h2 className="text-xl font-black text-gray-800 mb-4 uppercase tracking-tight">Dashboard Overview</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+                            <div className="bg-blue-800 p-5 rounded-2xl text-white shadow-lg shadow-blue-900/20">
+                                <div className="flex items-center gap-2 mb-3 opacity-90"><Icon name="FileText" size={20}/><span>Total Antrean</span></div>
+                                <p className="text-3xl font-black">{transactions.length}</p>
                             </div>
-                            <div className="bg-green-500 p-4 rounded-2xl text-white shadow-lg shadow-green-200">
-                                <div className="flex items-center gap-2 mb-2 opacity-90"><Icon name="CheckCircle2" size={18}/><span>Omset Lunas</span></div>
-                                <p className="text-2xl font-bold">{formatRupiah(tLunas)}</p>
+                            <div className="bg-emerald-600 p-5 rounded-2xl text-white shadow-lg shadow-emerald-900/20">
+                                <div className="flex items-center gap-2 mb-3 opacity-90"><Icon name="CheckCircle2" size={20}/><span>Omset Hari Ini</span></div>
+                                <p className="text-3xl font-black tracking-tight">{formatRupiah(tLunas)}</p>
                             </div>
-                            <div className="bg-orange-500 p-4 rounded-2xl text-white shadow-lg shadow-orange-200">
-                                <div className="flex items-center gap-2 mb-2 opacity-90"><Icon name="Clock" size={18}/><span>Belum Lunas</span></div>
-                                <p className="text-2xl font-bold">{formatRupiah(tPiutang)}</p>
+                            <div className="bg-orange-600 p-5 rounded-2xl text-white shadow-lg shadow-orange-900/20">
+                                <div className="flex items-center gap-2 mb-3 opacity-90"><Icon name="Clock" size={20}/><span>Belum Bayar</span></div>
+                                <p className="text-3xl font-black tracking-tight">{formatRupiah(tPiutang)}</p>
                             </div>
-                            <div className="bg-purple-600 p-4 rounded-2xl text-white shadow-lg shadow-purple-200">
-                                <div className="flex items-center gap-2 mb-2 opacity-90"><Icon name="Wallet" size={18}/><span>Total Uang di Laci</span></div>
-                                <p className="text-2xl font-bold">{formatRupiah(totalKasLaci)}</p>
+                            <div className="bg-slate-800 p-5 rounded-2xl text-white shadow-lg shadow-slate-900/20">
+                                <div className="flex items-center gap-2 mb-3 opacity-90"><Icon name="Wallet" size={20}/><span>Kas Laci (Tunai)</span></div>
+                                <p className="text-3xl font-black tracking-tight">{formatRupiah(totalKasLaci)}</p>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl border p-4 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 shrink-0"><Icon name="Wallet" size={20}/></div>
+                        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-700 shrink-0"><Icon name="Wallet" size={24}/></div>
                                 <div>
-                                    <h4 className="font-bold text-gray-800 text-sm">Rincian Kas Laci (Uang Tunai)</h4>
-                                    <p className="text-xs text-gray-500">Modal Awal: <span className="font-semibold text-gray-700">{formatRupiah(modalLaci)}</span> | Penjualan Tunai: <span className="font-semibold text-gray-700">{formatRupiah(tCash)}</span></p>
+                                    <h4 className="font-bold text-gray-800 text-sm">Rekapitulasi Kas Laci</h4>
+                                    <p className="text-xs text-gray-500 mt-1">Modal Awal: <span className="font-bold text-gray-700">{formatRupiah(modalLaci)}</span> | Penjualan Tunai: <span className="font-bold text-gray-700">{formatRupiah(tCash)}</span></p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 w-full sm:w-auto">
                                 {isEditing ? (
-                                    <div className="flex gap-1 w-full sm:w-auto">
-                                        <input type="text" value={inputModal} onChange={e => setInputModal(formatThousand(e.target.value))} className="border px-2 py-1 text-sm rounded-lg outline-none w-28 text-right font-bold text-gray-700 focus:ring-1 focus:ring-purple-500" placeholder="0" />
-                                        <button onClick={handleSaveModal} className="bg-purple-600 text-white px-2.5 py-1 rounded-lg text-xs font-bold">Simpan</button>
-                                        <button onClick={() => { setIsEditing(false); setInputModal(formatThousand(settings?.modalLaci || 0)); }} className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg text-xs font-bold">Batal</button>
+                                    <div className="flex gap-2 w-full sm:w-auto">
+                                        <input type="text" value={inputModal} onChange={e => setInputModal(formatThousand(e.target.value))} className="border-2 border-slate-200 px-3 py-1.5 text-sm rounded-xl outline-none w-32 text-right font-bold text-slate-700 focus:border-slate-500" placeholder="0" />
+                                        <button onClick={handleSaveModal} className="bg-slate-800 text-white px-4 py-1.5 rounded-xl text-xs font-bold hover:bg-slate-700">Simpan</button>
+                                        <button onClick={() => { setIsEditing(false); setInputModal(formatThousand(settings?.modalLaci || 0)); }} className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded-xl text-xs font-bold hover:bg-gray-200">Batal</button>
                                     </div>
                                 ) : (
-                                    <button onClick={() => requestAuth(() => setIsEditing(true))} className="w-full sm:w-auto bg-purple-50 hover:bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors"><Icon name="Edit" size={12}/> Atur Modal Awal</button>
+                                    <button onClick={() => requestAuth(() => setIsEditing(true))} className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><Icon name="Edit" size={14}/> Atur Modal Awal</button>
                                 )}
                             </div>
                         </div>
                     </div>
                     
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2"><Icon name="Clock" size={18} className="text-blue-500"/> Transaksi Terbaru</h3>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h3 className="font-black text-gray-800 mb-5 flex items-center gap-2 uppercase tracking-tight"><Icon name="Clock" size={20} className="text-blue-600"/> Antrean Terbaru</h3>
                         {recentTrx.length === 0 ? (
-                            <div className="text-center text-gray-400 py-6 text-sm">Belum ada transaksi.</div>
+                            <div className="text-center text-gray-400 py-8 text-sm font-medium border-2 border-dashed rounded-xl">Belum ada pelanggan hari ini.</div>
                         ) : (
                             <div className="space-y-3">
                                 {recentTrx.map(t => (
-                                    <div key={t.id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-xl border border-gray-50 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${t.status==='Lunas'?'bg-green-100 text-green-600':'bg-orange-100 text-orange-600'}`}>
+                                    <div key={t.id} className="flex justify-between items-center p-4 hover:bg-gray-50 rounded-xl border border-gray-100 transition-colors shadow-sm">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-sm ${t.status==='Lunas'?'bg-emerald-100 text-emerald-700':'bg-orange-100 text-orange-700'}`}>
                                                 {(t.customer || 'P').charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-sm text-gray-800 leading-tight">{t.customer || 'Pelanggan'} <span className="text-blue-500 font-normal">#{t.queueNumber || '-'}</span></p>
-                                                <p className="text-[10px] text-gray-500">{t.date ? new Date(t.date).toLocaleDateString('id-ID') : '-'}</p>
+                                                <p className="font-black text-sm text-gray-800 leading-tight mb-1">{t.customer || 'Pelanggan'} <span className="inline-block ml-2 px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px]">#{t.queueNumber || '-'}</span></p>
+                                                <p className="text-xs text-gray-500 font-medium">{t.date ? new Date(t.date).toLocaleDateString('id-ID') : '-'}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-bold text-sm text-gray-800">{formatRupiah(t.total || 0)}</p>
-                                            <p className={`text-[10px] font-bold ${t.progressStatus === 'Selesai' || t.progressStatus === 'Diambil' ? 'text-green-500' : 'text-orange-500'}`}>{t.progressStatus || 'Baru Masuk'}</p>
+                                            <p className="font-black text-sm text-gray-800 mb-1">{formatRupiah(t.total || 0)}</p>
+                                            <p className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${t.progressStatus === 'Selesai' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>{t.progressStatus || 'Baru Masuk'}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -606,156 +461,126 @@
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false); 
             const [editingProduct, setEditingProduct] = useState(null);
-            
             const [newCategory, setNewCategory] = useState(''); 
+            const catList = settings?.categories && settings.categories.length > 0 ? settings.categories : ['Potong Rambut'];
+            const [name, setName] = useState(''); const [price, setPrice] = useState(''); const [costPrice, setCostPrice] = useState(''); const [unit, setUnit] = useState('Pax'); const [category, setCategory] = useState(catList[0]); const [image, setImage] = useState(null);
             
-            const catList = settings?.categories && settings.categories.length > 0 ? settings.categories : ['Umum'];
-
-            const [name, setName] = useState(''); 
-            const [price, setPrice] = useState(''); 
-            const [costPrice, setCostPrice] = useState(''); 
-            const [unit, setUnit] = useState('Kg'); 
-            const [category, setCategory] = useState(catList[0]); 
-            const [image, setImage] = useState(null);
-
             const filteredProducts = products.filter(p => (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()));
             const handleImageUpload = async (e) => { if (e.target.files[0]) setImage(await compressImage(e.target.files[0])); };
             
             const openModal = (product = null) => {
-                if (product) { 
-                    setEditingProduct(product); setName(product.name); setPrice(formatThousand(product.price)); setCostPrice(formatThousand(product.costPrice || 0)); setUnit(product.unit); setCategory(product.category || catList[0]); setImage(product.image); 
-                } else { 
-                    setEditingProduct(null); setName(''); setPrice(''); setCostPrice(''); setUnit('Kg'); setCategory(catList[0]); setImage(null); 
-                }
+                if (product) { setEditingProduct(product); setName(product.name); setPrice(formatThousand(product.price)); setCostPrice(formatThousand(product.costPrice || 0)); setUnit(product.unit); setCategory(product.category || catList[0]); setImage(product.image); } 
+                else { setEditingProduct(null); setName(''); setPrice(''); setCostPrice(''); setUnit('Pax'); setCategory(catList[0]); setImage(null); }
                 setIsModalOpen(true);
             };
 
-            const saveProduct = (e) => { 
-                e.preventDefault(); 
-                onSaveProduct({ id: editingProduct ? editingProduct.id : Date.now(), name, price: parseThousand(price), costPrice: parseThousand(costPrice), unit, category, image }); 
-                setIsModalOpen(false); 
-            };
-
+            const saveProduct = (e) => { e.preventDefault(); onSaveProduct({ id: editingProduct ? editingProduct.id : Date.now(), name, price: parseThousand(price), costPrice: parseThousand(costPrice), unit, category, image }); setIsModalOpen(false); };
             const handleAddCategory = () => {
                 const trimmed = newCategory.trim();
                 if (!trimmed) return;
-                
                 const currentCats = settings?.categories || [];
-                if (currentCats.map(c=>c.toLowerCase()).includes(trimmed.toLowerCase())) {
-                    showAlert('Kategori tersebut sudah ada di daftar!', 'error');
-                    return;
-                }
-                
+                if (currentCats.map(c=>c.toLowerCase()).includes(trimmed.toLowerCase())) { showAlert('Kategori tersebut sudah ada di daftar!', 'error'); return; }
                 const updatedCats = [...currentCats, trimmed];
                 onSaveSettings({ ...settings, categories: updatedCats });
-                setNewCategory('');
-                showAlert('Kategori baru berhasil ditambahkan!', 'success');
+                setNewCategory(''); showAlert('Kategori baru berhasil ditambahkan!', 'success');
             };
-
             const handleDeleteCategory = (catToDelete) => {
                 const currentCats = settings?.categories || [];
                 const updatedCats = currentCats.filter(c => c !== catToDelete);
                 onSaveSettings({ ...settings, categories: updatedCats });
-                
-                if (category === catToDelete && updatedCats.length > 0) {
-                    setCategory(updatedCats[0]);
-                }
+                if (category === catToDelete && updatedCats.length > 0) setCategory(updatedCats[0]);
             };
 
             return (
                 <>
                     <div className="space-y-4 animate-in fade-in duration-500">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Layanan</h2>
-                            <div className="flex items-center gap-2">
-                                <button onClick={() => setIsCategoryModalOpen(true)} className="bg-orange-50 hover:bg-orange-100 text-orange-600 px-3 py-2 rounded-lg flex items-center gap-1.5 font-bold shadow-sm transition-colors text-sm">
+                            <h2 className="text-xl sm:text-2xl font-black text-gray-800 uppercase tracking-tight">Daftar Layanan</h2>
+                            <div className="flex items-center gap-3">
+                                <button onClick={() => setIsCategoryModalOpen(true)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold transition-colors text-sm">
                                     <Icon name="Tag" size={18} /> <span className="hidden sm:inline">Kategori</span>
                                 </button>
-                                <button onClick={() => openModal()} className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center gap-1.5 font-bold shadow-md transition-colors text-sm">
-                                    <Icon name="Plus" size={18} /> <span className="hidden sm:inline">Produk</span>
+                                <button onClick={() => openModal()} className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-md transition-colors text-sm">
+                                    <Icon name="Plus" size={18} /> <span className="hidden sm:inline">Layanan Baru</span>
                                 </button>
                             </div>
                         </div>
                         
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                             {filteredProducts.map(p => (
-                                <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md flex flex-col">
-                                    <div className="h-24 sm:h-28 bg-gray-100 relative">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400"><Icon name="ImageIcon" size={28} /></div>}<span className="absolute top-1 right-1 bg-white px-1.5 py-0.5 text-[10px] font-bold rounded-md shadow text-blue-600">{p.category}</span></div>
-                                    <div className="p-2 sm:p-3 flex-1 flex flex-col justify-between"><div><h3 className="font-bold text-gray-800 text-xs sm:text-sm mb-1 leading-tight line-clamp-2">{p.name}</h3><p className="text-blue-600 font-semibold text-xs">{formatRupiah(p.price)} <span className="text-gray-500 text-[10px] font-normal">/ {p.unit}</span></p></div><div className="flex gap-1.5 mt-2 pt-2 border-t border-gray-100"><button onClick={() => openModal(p)} className="flex-1 bg-gray-50 hover:bg-gray-200 text-gray-700 py-1.5 rounded-lg flex items-center justify-center gap-1 text-[10px] font-medium"><Icon name="Edit" size={12} /> Edit</button><button onClick={() => onDeleteProduct(p.id)} className="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1.5 rounded-lg flex items-center justify-center"><Icon name="Trash2" size={12} /></button></div></div>
+                                <div key={p.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg flex flex-col transition-all">
+                                    <div className="h-32 bg-slate-100 relative">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><Icon name="Scissors" size={36} /></div>}<span className="absolute top-2 right-2 bg-slate-800 text-white px-2 py-1 text-[10px] font-bold rounded-lg shadow-md tracking-wider uppercase">{p.category}</span></div>
+                                    <div className="p-4 flex-1 flex flex-col justify-between">
+                                        <div>
+                                            <h3 className="font-bold text-gray-800 text-sm mb-1.5 leading-tight line-clamp-2">{p.name}</h3>
+                                            <p className="text-blue-700 font-black text-sm">{formatRupiah(p.price)} <span className="text-gray-400 text-[10px] font-semibold uppercase ml-1">/ {p.unit}</span></p>
+                                        </div>
+                                        <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+                                            <button onClick={() => openModal(p)} className="flex-1 bg-slate-50 hover:bg-slate-200 text-slate-700 py-2 rounded-xl flex items-center justify-center gap-1 text-[10px] font-bold uppercase transition-colors"><Icon name="Edit" size={14} /> Edit</button>
+                                            <button onClick={() => onDeleteProduct(p.id)} className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-xl flex items-center justify-center transition-colors"><Icon name="Trash2" size={14} /></button>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     {isModalOpen && (
-                        <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
-                            <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                                <div className="p-5 border-b flex justify-between items-center bg-gray-50">
-                                    <h3 className="text-xl font-bold text-gray-800">{editingProduct ? 'Edit Layanan' : 'Tambah Layanan Baru'}</h3>
-                                    <button onClick={()=>setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><Icon name="XCircle" size={24}/></button>
+                        <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm">
+                            <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] border border-gray-200">
+                                <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+                                    <h3 className="text-xl font-black text-slate-800 uppercase">{editingProduct ? 'Edit Layanan' : 'Layanan Baru'}</h3>
+                                    <button onClick={()=>setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><Icon name="XCircle" size={24}/></button>
                                 </div>
-                                <form onSubmit={saveProduct} className="p-5 space-y-4 overflow-y-auto">
-                                    <div><label className="block text-sm font-medium mb-1">Nama Layanan</label><input type="text" required value={name} onChange={e=>setName(e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" /></div>
+                                <form onSubmit={saveProduct} className="p-6 space-y-5 overflow-y-auto">
+                                    <div><label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-600">Nama Layanan / Produk</label><input type="text" required value={name} onChange={e=>setName(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold text-sm" /></div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div><label className="block text-sm font-medium mb-1 text-orange-600">Harga Modal (Rp)</label><input type="text" value={costPrice} onChange={e=>setCostPrice(formatThousand(e.target.value))} placeholder="Modal/Dasar" className="w-full px-3 py-2 border border-orange-200 bg-orange-50/50 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none font-bold text-orange-700" /></div>
-                                        <div><label className="block text-sm font-medium mb-1 text-blue-700">Harga Jual (Rp)</label><input type="text" required value={price} onChange={e=>setPrice(formatThousand(e.target.value))} placeholder="Jual ke Pelanggan" className="w-full px-3 py-2 border border-blue-200 bg-blue-50/50 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-700" /></div>
+                                        <div><label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-600">Harga Jual (Rp)</label><input type="text" required value={price} onChange={e=>setPrice(formatThousand(e.target.value))} className="w-full px-4 py-3 border-2 border-blue-200 bg-blue-50/50 rounded-xl focus:border-blue-500 outline-none font-black text-blue-700" /></div>
+                                        <div><label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-600">Harga Modal Dasar</label><input type="text" value={costPrice} onChange={e=>setCostPrice(formatThousand(e.target.value))} placeholder="0" className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-500 outline-none font-bold text-slate-700" /></div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div><label className="block text-sm font-medium mb-1">Satuan</label><select value={unit} onChange={e=>setUnit(e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="Kg">Kg</option><option value="Pcs">Pcs</option><option value="Psg">Pasang</option><option value="Meter">Meter</option><option value="Liter">Liter</option><option value="Paket">Paket</option></select></div>
+                                        <div><label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-600">Satuan</label><select value={unit} onChange={e=>setUnit(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold text-sm bg-white"><option value="Pax">Pax/Orang</option><option value="Pcs">Pcs</option><option value="Paket">Paket</option><option value="Botol">Botol</option><option value="Tube">Tube</option></select></div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">Kategori</label>
-                                            <select value={category} onChange={e=>setCategory(e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                                                {catList.map((cat, idx) => (
-                                                    <option key={idx} value={cat}>{cat}</option>
-                                                ))}
+                                            <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-600">Kategori</label>
+                                            <select value={category} onChange={e=>setCategory(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold text-sm bg-white">
+                                                {catList.map((cat, idx) => (<option key={idx} value={cat}>{cat}</option>))}
                                             </select>
                                         </div>
                                     </div>
-                                    <div><label className="block text-sm font-medium mb-1">Foto Layanan</label><div className="flex items-center gap-4">{image && <img src={image} className="w-16 h-16 rounded object-cover" />}<input type="file" accept="image/*" onChange={handleImageUpload} className="text-sm" /></div></div>
-                                    <div className="flex gap-3 pt-4"><button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700">Simpan Produk</button></div>
+                                    <div><label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-600">Foto (Opsional)</label><div className="flex items-center gap-4">{image && <img src={image} className="w-16 h-16 rounded-xl object-cover border" />}<input type="file" accept="image/*" onChange={handleImageUpload} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer" /></div></div>
+                                    <div className="pt-4"><button type="submit" className="w-full py-4 bg-blue-700 text-white rounded-2xl font-black uppercase tracking-wider shadow-lg shadow-blue-900/20 hover:bg-blue-800 transition-all">Simpan Data</button></div>
                                 </form>
                             </div>
                         </div>
                     )}
 
                     {isCategoryModalOpen && (
-                        <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 animate-in fade-in duration-200">
-                            <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
-                                <div className="p-5 border-b bg-gray-50 flex justify-between items-center relative">
-                                    <div className="flex items-center gap-2 text-orange-600">
+                        <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm">
+                            <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+                                <div className="p-6 border-b bg-slate-50 flex justify-between items-center">
+                                    <div className="flex items-center gap-3 text-slate-800">
                                         <Icon name="Tag" size={24} />
-                                        <h3 className="text-xl font-bold text-gray-800">Atur Kategori</h3>
+                                        <h3 className="text-xl font-black uppercase tracking-tight">Atur Kategori</h3>
                                     </div>
-                                    <button onClick={()=>setIsCategoryModalOpen(false)} className="text-gray-400 hover:text-gray-600"><Icon name="XCircle" size={24}/></button>
+                                    <button onClick={()=>setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-600"><Icon name="XCircle" size={24}/></button>
                                 </div>
-                                <div className="p-5 flex-1 flex flex-col min-h-0">
-                                    <div className="flex gap-2 mb-4 shrink-0">
-                                        <input 
-                                            type="text" 
-                                            value={newCategory} 
-                                            onChange={e=>setNewCategory(e.target.value)} 
-                                            onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
-                                            placeholder="Cth: Minuman, Ban, Baju..." 
-                                            className="flex-1 px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm" 
-                                        />
-                                        <button onClick={handleAddCategory} className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-bold shadow-sm transition-colors text-sm">
-                                            Tambah
-                                        </button>
+                                <div className="p-6 flex-1 flex flex-col min-h-0">
+                                    <div className="flex gap-2 mb-6 shrink-0">
+                                        <input type="text" value={newCategory} onChange={e=>setNewCategory(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddCategory()} placeholder="Cth: Pomade..." className="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-blue-500 text-sm font-bold" />
+                                        <button onClick={handleAddCategory} className="bg-slate-800 hover:bg-slate-900 text-white px-5 py-3 rounded-xl font-bold transition-colors text-sm">Tambah</button>
                                     </div>
-                                    <p className="text-xs text-gray-500 font-bold uppercase mb-2">Daftar Kategori Anda:</p>
-                                    <div className="space-y-2 overflow-y-auto pr-1">
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-3">Kategori Tersedia:</p>
+                                    <div className="space-y-2 overflow-y-auto pr-2 custom-scroll">
                                         {catList.map((cat, idx) => (
-                                            <div key={idx} className="flex justify-between items-center p-3 bg-white border border-gray-100 shadow-sm rounded-xl hover:border-orange-200 transition-colors">
-                                                <span className="font-bold text-gray-700 text-sm">{cat}</span>
-                                                <button onClick={()=>handleDeleteCategory(cat)} className="text-red-400 hover:bg-red-50 p-1.5 rounded-lg transition-colors">
-                                                    <Icon name="Trash2" size={16}/>
-                                                </button>
+                                            <div key={idx} className="flex justify-between items-center p-4 bg-white border-2 border-slate-100 rounded-xl hover:border-slate-300 transition-colors">
+                                                <span className="font-bold text-slate-700 text-sm">{cat}</span>
+                                                <button onClick={()=>handleDeleteCategory(cat)} className="text-red-400 hover:bg-red-50 p-2 rounded-lg transition-colors"><Icon name="Trash2" size={16}/></button>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
-                                <div className="p-4 border-t bg-gray-50">
-                                    <button onClick={()=>setIsCategoryModalOpen(false)} className="w-full py-2.5 bg-gray-200 text-gray-800 font-bold rounded-xl active:scale-95 transition-transform">Selesai</button>
+                                <div className="p-5 border-t bg-slate-50">
+                                    <button onClick={()=>setIsCategoryModalOpen(false)} className="w-full py-3.5 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300 transition-colors uppercase tracking-wider text-sm">Tutup</button>
                                 </div>
                             </div>
                         </div>
@@ -778,8 +603,7 @@
 
             const handleSubmit = () => {
                 if (method === 'Cash' && numReceived < totalCart) {
-                    showAlert('Uang yang diterima kurang dari total tagihan!', 'error');
-                    return;
+                    showAlert('Uang yang diterima kurang dari total tagihan!', 'error'); return;
                 }
                 const finalReceived = method === 'Cash' ? numReceived : totalCart;
                 const finalChange = method === 'Cash' ? change : 0;
@@ -787,43 +611,43 @@
             };
 
             return (
-                <div className="fixed inset-0 bg-black/60 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+                <div className="fixed inset-0 bg-black/70 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 backdrop-blur-sm">
                     <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0">
-                        <div className="p-5 border-b relative text-center">
-                            <h2 className="text-xl font-bold text-gray-800">Pembayaran</h2>
-                            <button onClick={onClose} className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200"><Icon name="XCircle" size={18}/></button>
+                        <div className="p-6 border-b relative text-center bg-slate-50">
+                            <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Proses Pembayaran</h2>
+                            <button onClick={onClose} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white shadow-sm rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800"><Icon name="XCircle" size={20}/></button>
                         </div>
                         <div className="p-6 space-y-6">
-                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 text-center">
-                                <p className="text-blue-600 font-bold text-sm tracking-wide mb-1 uppercase">Total Harus Dibayar</p>
-                                <p className="text-4xl font-black text-blue-700">{formatRupiah(totalCart)}</p>
+                            <div className="bg-blue-800 rounded-2xl p-6 text-center shadow-lg shadow-blue-900/20">
+                                <p className="text-blue-200 font-bold text-xs tracking-widest mb-2 uppercase">Total Tagihan</p>
+                                <p className="text-4xl font-black text-white tracking-tight">{formatRupiah(totalCart)}</p>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-3">
                                 {['Cash', 'QRIS', 'Transfer'].map(m => (
-                                    <button key={m} onClick={()=>{setMethod(m); setReceived('');}} className={`flex-1 py-3 rounded-xl font-bold border-2 transition-all ${method === m ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-200' : 'border-gray-200 bg-white text-gray-500 hover:border-blue-300'}`}>{m}</button>
+                                    <button key={m} onClick={()=>{setMethod(m); setReceived('');}} className={`flex-1 py-3.5 rounded-xl font-bold border-2 transition-all text-sm uppercase tracking-wider ${method === m ? 'border-slate-800 bg-slate-800 text-white shadow-md' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>{m}</button>
                                 ))}
                             </div>
                             {method === 'Cash' && (
-                                <div className="space-y-4 animate-in fade-in">
+                                <div className="space-y-5 animate-in fade-in">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Uang Diterima (Rp)</label>
-                                        <input type="text" value={received} onChange={(e) => setReceived(formatThousand(e.target.value))} placeholder="0" className="w-full text-right text-2xl font-bold px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all" />
+                                        <label className="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">Uang Diterima (Rp)</label>
+                                        <input type="text" value={received} onChange={(e) => setReceived(formatThousand(e.target.value))} placeholder="0" className="w-full text-right text-3xl font-black px-5 py-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-blue-600 focus:bg-white outline-none transition-all text-slate-800" />
                                     </div>
                                     <div className="grid grid-cols-4 gap-2">
-                                        <button onClick={() => handleQuickAmount('pas')} className="py-2 bg-gray-800 text-white rounded-lg font-bold text-xs shadow-sm hover:bg-gray-700">PAS</button>
-                                        <button onClick={() => handleQuickAmount(20000)} className="py-2 bg-gray-100 text-gray-700 border rounded-lg font-bold text-xs hover:bg-gray-200">20K</button>
-                                        <button onClick={() => handleQuickAmount(50000)} className="py-2 bg-gray-100 text-gray-700 border rounded-lg font-bold text-xs hover:bg-gray-200">50K</button>
-                                        <button onClick={() => handleQuickAmount(100000)} className="py-2 bg-gray-100 text-gray-700 border rounded-lg font-bold text-xs hover:bg-gray-200">100K</button>
+                                        <button onClick={() => handleQuickAmount('pas')} className="py-2.5 bg-blue-100 text-blue-700 rounded-xl font-black text-xs uppercase tracking-wider">PAS</button>
+                                        <button onClick={() => handleQuickAmount(50000)} className="py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-xs hover:bg-slate-200">50K</button>
+                                        <button onClick={() => handleQuickAmount(100000)} className="py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-xs hover:bg-slate-200">100K</button>
+                                        <button onClick={() => handleQuickAmount(150000)} className="py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-xs hover:bg-slate-200">150K</button>
                                     </div>
-                                    <div className={`p-4 rounded-xl flex justify-between items-center font-bold border ${change > 0 ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
-                                        <span>Kembalian:</span><span className="text-xl">{formatRupiah(change)}</span>
+                                    <div className={`p-5 rounded-2xl flex justify-between items-center font-bold border-2 ${change > 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                                        <span className="text-sm uppercase tracking-wider">Kembalian:</span><span className="text-2xl font-black">{formatRupiah(change)}</span>
                                     </div>
                                 </div>
                             )}
                         </div>
-                        <div className="p-4 bg-gray-50 border-t pb-[calc(16px+env(safe-area-inset-bottom))] sm:pb-4">
-                            <button onClick={handleSubmit} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-colors">
-                                <Icon name="Receipt" size={24} /> PROSES TRANSAKSI
+                        <div className="p-5 bg-slate-50 border-t pb-[calc(20px+env(safe-area-inset-bottom))] sm:pb-5">
+                            <button onClick={handleSubmit} className="w-full bg-blue-700 hover:bg-blue-800 text-white py-4.5 rounded-2xl font-black text-lg shadow-lg shadow-blue-900/20 flex items-center justify-center gap-3 transition-colors uppercase tracking-widest">
+                                <Icon name="Receipt" size={24} /> PROSES BAYAR
                             </button>
                         </div>
                     </div>
@@ -831,24 +655,31 @@
             );
         }
 
-        function KasirView({ products, transactions, onSaveTransaction, formatRupiah, searchQuery, settings, editingTrx, clearEditingTrx, showAlert }) {
+        function KasirView({ products, transactions, onSaveTransaction, formatRupiah, parseThousand, formatThousand, searchQuery, settings, editingTrx, clearEditingTrx, showAlert }) {
             const [cart, setCart] = useState([]);
-            const [customerName, setCustomerName] = useState(''); const [customerPhone, setCustomerPhone] = useState(''); const [pickupDate, setPickupDate] = useState(new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0]);
+            const [customerName, setCustomerName] = useState(''); const [customerPhone, setCustomerPhone] = useState(''); const [pickupDate, setPickupDate] = useState(new Date().toISOString().split('T')[0]);
             const [trxId, setTrxId] = useState(null); 
+            const [discountStr, setDiscountStr] = useState('');
             const [receiptData, setReceiptData] = useState(null);
             const [showPaymentModal, setShowPaymentModal] = useState(false);
             const [isCartMobileOpen, setIsCartMobileOpen] = useState(false); 
 
-            useEffect(() => { if (editingTrx) { setCart(editingTrx.items || []); setCustomerName(editingTrx.customer || ''); setCustomerPhone(editingTrx.customerPhone || ''); setPickupDate(editingTrx.pickupDate || ''); setTrxId(editingTrx.id); } }, [editingTrx]);
+            useEffect(() => { 
+                if (editingTrx) { 
+                    setCart(editingTrx.items || []); setCustomerName(editingTrx.customer || ''); setCustomerPhone(editingTrx.customerPhone || ''); setPickupDate(editingTrx.pickupDate || new Date().toISOString().split('T')[0]); setTrxId(editingTrx.id); setDiscountStr(formatThousand(editingTrx.discount || 0));
+                } 
+            }, [editingTrx]);
 
-            const cancelEdit = () => { setCart([]); setCustomerName(''); setCustomerPhone(''); setPickupDate(new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0]); setTrxId(null); clearEditingTrx(); setIsCartMobileOpen(false); };
+            const cancelEdit = () => { setCart([]); setCustomerName(''); setCustomerPhone(''); setPickupDate(new Date().toISOString().split('T')[0]); setTrxId(null); setDiscountStr(''); clearEditingTrx(); setIsCartMobileOpen(false); };
             const filteredProducts = products.filter(p => (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()));
             const addToCart = (product) => { setCart(cart.find(i => i.id === product.id) ? cart.map(i => i.id === product.id ? { ...i, qty: (parseFloat(i.qty) || 0) + 1 } : i) : [...cart, { ...product, qty: 1 }]); };
             const updateQty = (id, delta) => { setCart(cart.map(i => { if (i.id === id) { const n = (parseFloat(i.qty) || 0) + delta; return n > 0 ? { ...i, qty: n } : null; } return i; }).filter(Boolean)); };
             const handleQtyChange = (id, val) => setCart(cart.map(i => i.id === id ? { ...i, qty: val } : i));
             const removeCartItem = (id) => setCart(cart.filter(i => i.id !== id));
             
-            const totalCart = cart.reduce((sum, item) => sum + (item.price * (parseFloat(item.qty) || 0)), 0);
+            const subTotal = cart.reduce((sum, item) => sum + (item.price * (parseFloat(item.qty) || 0)), 0);
+            const discountVal = parseThousand(discountStr);
+            const totalCart = Math.max(0, subTotal - discountVal);
             const totalItemQty = cart.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
 
             const handleProcessPayment = (method, amountReceived, change) => {
@@ -859,20 +690,20 @@
                 
                 const newTrx = { 
                     id: trxId || `TRX-${Date.now().toString().slice(-6)}`, 
-                    customer: customerName || 'Pelanggan Baru', 
+                    customer: customerName || 'Pelanggan', 
                     customerPhone: customerPhone, 
                     items: cleanCart, 
-                    total: totalCart, 
+                    total: totalCart,
+                    discount: discountVal, 
                     status: 'Lunas', 
                     date: trxId && editingTrx ? editingTrx.date : new Date().toISOString(), 
                     pickupDate: pickupDate,
                     queueNumber: queueNumber,
-                    progressStatus: 'Diambil',
+                    progressStatus: 'Selesai',
                     paymentMethod: method,        
                     amountReceived: amountReceived, 
                     change: change                
                 };
-                
                 onSaveTransaction(newTrx); setReceiptData(newTrx); setShowPaymentModal(false); cancelEdit(); setIsCartMobileOpen(false);
             };
 
@@ -885,15 +716,16 @@
                 
                 const newTrx = { 
                     id: trxId || `TRX-${Date.now().toString().slice(-6)}`, 
-                    customer: customerName || 'Pelanggan Baru', 
+                    customer: customerName || 'Pelanggan', 
                     customerPhone: customerPhone, 
                     items: cleanCart, 
-                    total: totalCart, 
+                    total: totalCart,
+                    discount: discountVal, 
                     status: 'Belum Lunas', 
                     date: trxId && editingTrx ? editingTrx.date : new Date().toISOString(), 
                     pickupDate: pickupDate,
                     queueNumber: queueNumber,
-                    progressStatus: trxId && editingTrx && editingTrx.progressStatus ? editingTrx.progressStatus : 'Baru Masuk',
+                    progressStatus: trxId && editingTrx && editingTrx.progressStatus ? editingTrx.progressStatus : 'Menunggu Antrean',
                     paymentMethod: '-', amountReceived: 0, change: 0
                 };
                 onSaveTransaction(newTrx); setReceiptData(newTrx); cancelEdit(); setIsCartMobileOpen(false);
@@ -901,55 +733,71 @@
 
             return (
                 <>
-                    <div className="flex flex-row gap-3 sm:gap-6 animate-in fade-in h-[calc(100vh-140px)] relative overflow-hidden">
-                        <div className="flex-1 overflow-y-auto pr-1 pb-36 md:pb-4">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4">Pilih Layanan</h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
+                    {/* Layar lebar: Keranjang di kanan dengan lebar tetap, area produk flex */}
+                    <div className="flex flex-row gap-4 lg:gap-6 animate-in fade-in h-[calc(100vh-160px)] lg:h-[calc(100vh-140px)] relative overflow-hidden">
+                        
+                        {/* Area Produk */}
+                        <div className="flex-1 overflow-y-auto pr-2 pb-36 md:pb-4 custom-scroll">
+                            <h2 className="text-xl font-black text-slate-800 mb-4 uppercase tracking-tight">Pilih Layanan</h2>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 lg:gap-4">
                                 {filteredProducts.map(p => (
-                                    <button key={p.id} onClick={() => addToCart(p)} className="bg-white rounded-xl border p-2 flex flex-col items-center text-center hover:border-blue-500 group">
-                                        <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2 overflow-hidden">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <Icon name="Package" size={24} className="text-blue-500" />}</div>
-                                        <h3 className="font-medium text-[10px] sm:text-xs mb-1 line-clamp-2">{p.name}</h3><p className="text-blue-600 font-bold text-[10px] sm:text-xs mb-2">{formatRupiah(p.price)}</p>
-                                        <div className="mt-auto w-full py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded">+ Tambah</div>
+                                    <button key={p.id} onClick={() => addToCart(p)} className="bg-white rounded-2xl border border-slate-200 p-3 lg:p-4 flex flex-col items-center text-center hover:border-blue-600 hover:shadow-lg transition-all group">
+                                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3 overflow-hidden group-hover:scale-110 transition-transform">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <Icon name="Scissors" size={28} className="text-slate-400" />}</div>
+                                        <h3 className="font-bold text-xs lg:text-sm mb-1 line-clamp-2 text-slate-700">{p.name}</h3>
+                                        <p className="text-blue-700 font-black text-xs lg:text-sm mb-3">{formatRupiah(p.price)}</p>
+                                        <div className="mt-auto w-full py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl group-hover:bg-blue-700 group-hover:text-white transition-colors">+ Tambah</div>
                                     </button>
                                 ))}
                             </div>
                         </div>
 
+                        {/* Sticky Button Keranjang (Mobile) */}
                         {(cart.length > 0 || trxId) && (
-                            <div className="md:hidden fixed bottom-[calc(78px+env(safe-area-inset-bottom,0px))] left-0 right-0 bg-white border-t shadow-[0_-8px_15px_-3px_rgba(0,0,0,0.1)] z-30 p-3 flex justify-between items-center animate-in slide-in-from-bottom-2">
+                            <div className="md:hidden fixed bottom-[calc(78px+env(safe-area-inset-bottom,0px))] left-0 right-0 bg-white border-t shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.15)] z-30 p-4 flex justify-between items-center animate-in slide-in-from-bottom-2">
                                 <div>
-                                    <p className="text-[10px] text-gray-500 font-bold uppercase">Total Pesanan</p>
-                                    <p className="text-lg font-black text-blue-700">{formatRupiah(totalCart)}</p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tagihan Kasir</p>
+                                    <p className="text-xl font-black text-blue-800">{formatRupiah(totalCart)}</p>
                                 </div>
-                                <button onClick={() => setIsCartMobileOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-200 transition-transform active:scale-95">
-                                    <Icon name="ShoppingCart" size={18} />
-                                    Lihat Keranjang ({totalItemQty})
+                                <button onClick={() => setIsCartMobileOpen(true)} className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95 transition-transform uppercase text-sm">
+                                    <Icon name="ShoppingCart" size={18} /> Keranjang ({totalItemQty})
                                 </button>
                             </div>
                         )}
 
-                        <div className={`fixed inset-0 z-40 bg-gray-50 flex flex-col md:static md:z-auto md:bg-white md:w-[340px] md:shadow-lg md:border md:rounded-2xl shrink-0 transition-transform duration-300 ${isCartMobileOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}`}>
-                            <div className="p-3 border-b bg-white md:bg-gray-50 md:rounded-t-2xl space-y-2 relative shadow-sm md:shadow-none pt-4 md:pt-3">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
-                                        <button onClick={() => setIsCartMobileOpen(false)} className="md:hidden p-1.5 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200"><Icon name="XCircle" size={20}/></button>
-                                        <h2 className="font-bold text-gray-800 text-lg md:text-base">{trxId ? 'Pesanan Diedit' : 'Keranjang Pesanan'}</h2>
+                        {/* Area Keranjang (Sidebar Kanan di Desktop) */}
+                        <div className={`fixed inset-0 z-40 bg-slate-800/50 backdrop-blur-sm flex flex-col justify-end md:static md:z-auto md:bg-transparent md:w-[380px] lg:w-[420px] shrink-0 transition-all duration-300 ${isCartMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'}`}>
+                            <div className={`bg-white md:bg-transparent h-[90vh] md:h-full w-full rounded-t-3xl md:rounded-none flex flex-col shadow-2xl md:shadow-none border-l-0 md:border-l border-slate-200 transition-transform duration-300 ${isCartMobileOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}`}>
+                                
+                                <div className="p-4 md:p-0 md:mb-3 md:pl-4 border-b md:border-none relative pt-5 md:pt-0 shrink-0">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => setIsCartMobileOpen(false)} className="md:hidden p-2 bg-slate-100 rounded-full text-slate-600"><Icon name="XCircle" size={20}/></button>
+                                            <h2 className="font-black text-slate-800 text-lg uppercase tracking-tight">{trxId ? 'Edit Pesanan' : 'Detail Pesanan'}</h2>
+                                        </div>
+                                        {trxId && <button onClick={cancelEdit} className="text-red-500 text-xs font-bold uppercase tracking-wider bg-red-50 px-2 py-1 rounded"><Icon name="XCircle" size={14} className="inline mr-1"/> Batal</button>}
                                     </div>
-                                    {trxId && <button onClick={cancelEdit} className="text-red-500 text-xs font-bold"><Icon name="XCircle" size={14} className="inline"/> Batal</button>}
+                                    <div className="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                                        <input type="text" placeholder="Nama Pelanggan" value={customerName} onChange={e=>setCustomerName(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700" />
+                                        <input type="text" placeholder="No. WA (0812...)" value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700" />
+                                        <div className="flex items-center gap-2 bg-white px-3 py-2 border border-slate-200 rounded-xl text-sm"><Icon name="CalendarDays" size={16} className="text-blue-500"/><span className="text-slate-600 text-xs flex-1 font-bold">Jadwal:</span><input type="date" value={pickupDate} onChange={e=>setPickupDate(e.target.value)} className="outline-none text-right font-bold cursor-pointer bg-transparent text-slate-800" /></div>
+                                    </div>
                                 </div>
-                                <input type="text" placeholder="Nama Pelanggan" value={customerName} onChange={e=>setCustomerName(e.target.value)} className="w-full px-3 py-2 md:px-2 md:py-1.5 text-sm border rounded-lg focus:ring-1 outline-none" />
-                                <input type="text" placeholder="No. WA (0812...)" value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)} className="w-full px-3 py-2 md:px-2 md:py-1.5 text-sm border rounded-lg focus:ring-1 outline-none" />
-                                <div className="flex items-center gap-2 bg-white px-3 py-2 md:px-2 md:py-1.5 border rounded-lg text-sm"><Icon name="CalendarDays" size={14} className="text-gray-400"/><span className="text-gray-500 text-xs flex-1">Ambil:</span><input type="date" value={pickupDate} onChange={e=>setPickupDate(e.target.value)} className="outline-none text-right font-medium cursor-pointer bg-transparent text-gray-800" /></div>
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-white md:bg-transparent pb-28 md:pb-3">
-                                {cart.length===0 ? <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm"><Icon name="ShoppingCart" size={32} className="mb-2 opacity-50"/>Keranjang Kosong</div> : 
-                                cart.map(i => (
-                                    <div key={i.id} className="bg-white md:bg-gray-50 p-3 md:p-2 rounded-xl border shadow-sm md:shadow-none"><div className="flex justify-between items-start mb-2"><div className="flex-1"><h4 className="text-xs font-bold leading-tight">{i.name}</h4><p className="text-[10px] text-gray-500">{formatRupiah(i.price)}/{i.unit}</p></div><button onClick={()=>removeCartItem(i.id)} className="text-red-400 p-1"><Icon name="Trash2" size={14}/></button></div><div className="flex justify-between items-center"><div className="flex bg-white border rounded"><button onClick={()=>updateQty(i.id, -1)} className="px-3 md:px-2 py-1 md:py-0 bg-gray-100">-</button><input type="number" value={i.qty} onChange={e=>handleQtyChange(i.id, e.target.value)} className="w-12 md:w-10 text-center text-xs font-bold border-x outline-none"/><button onClick={()=>updateQty(i.id, 1)} className="px-3 md:px-2 py-1 md:py-0 bg-gray-100">+</button></div><p className="text-sm md:text-xs font-bold">{formatRupiah(i.price*(parseFloat(i.qty)||0))}</p></div></div>
-                                ))}
-                            </div>
-                            <div className="p-3 border-t bg-white md:rounded-b-2xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none pb-[calc(16px+env(safe-area-inset-bottom))] md:pb-3">
-                                <div className="flex justify-between items-center mb-3"><span className="text-sm font-medium">Total Tagihan</span><span className="text-xl font-bold">{formatRupiah(totalCart)}</span></div>
-                                <div className="grid grid-cols-2 gap-2"><button onClick={handleCheckoutTunda} disabled={cart.length===0} className="py-3 md:py-2 bg-orange-100 text-orange-700 font-semibold rounded-xl text-xs flex flex-col items-center"><Icon name="Clock" size={16}/>Simpan (Tunda)</button><button onClick={()=>setShowPaymentModal(true)} disabled={cart.length===0} className="py-3 md:py-2 bg-blue-600 text-white font-semibold rounded-xl text-xs flex flex-col items-center shadow-lg"><Icon name="CheckCircle2" size={16}/>Bayar Lunas</button></div>
+
+                                <div className="flex-1 overflow-y-auto p-4 md:pl-4 md:py-0 space-y-3 custom-scroll">
+                                    {cart.length===0 ? <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm font-bold uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-2xl m-2"><Icon name="Scissors" size={32} className="mb-3 opacity-30"/>Keranjang Kosong</div> : 
+                                    cart.map(i => (
+                                        <div key={i.id} className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm"><div className="flex justify-between items-start mb-3"><div className="flex-1"><h4 className="text-sm font-bold leading-tight text-slate-800">{i.name}</h4><p className="text-xs text-blue-600 font-bold">{formatRupiah(i.price)}</p></div><button onClick={()=>removeCartItem(i.id)} className="text-red-400 hover:bg-red-50 p-1.5 rounded-lg transition-colors"><Icon name="Trash2" size={16}/></button></div><div className="flex justify-between items-center"><div className="flex bg-slate-50 border border-slate-200 rounded-xl overflow-hidden"><button onClick={()=>updateQty(i.id, -1)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 font-bold">-</button><input type="number" value={i.qty} onChange={e=>handleQtyChange(i.id, e.target.value)} className="w-10 text-center text-sm font-black border-x border-slate-200 outline-none bg-white"/><button onClick={()=>updateQty(i.id, 1)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 font-bold">+</button></div><p className="text-sm font-black text-slate-800">{formatRupiah(i.price*(parseFloat(i.qty)||0))}</p></div></div>
+                                    ))}
+                                </div>
+
+                                <div className="p-4 md:pl-4 border-t border-slate-200 bg-white md:bg-transparent pb-[calc(20px+env(safe-area-inset-bottom))] md:pb-0 shrink-0">
+                                    <div className="bg-slate-800 rounded-2xl p-4 text-white shadow-lg shadow-slate-900/20 mb-3">
+                                        <div className="flex justify-between items-center mb-2"><span className="text-xs font-bold uppercase tracking-wider text-slate-300">Subtotal</span><span className="font-bold">{formatRupiah(subTotal)}</span></div>
+                                        <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-600"><span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Diskon</span><input type="text" value={discountStr} onChange={e=>setDiscountStr(formatThousand(e.target.value))} placeholder="0" className="w-24 text-right outline-none text-emerald-400 font-bold bg-slate-700/50 px-2 py-0.5 rounded focus:ring-1 focus:ring-emerald-400" /></div>
+                                        <div className="flex justify-between items-end"><span className="text-sm font-bold uppercase tracking-widest text-slate-200">Total Tagihan</span><span className="text-2xl font-black">{formatRupiah(totalCart)}</span></div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3"><button onClick={handleCheckoutTunda} disabled={cart.length===0} className="py-3.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors disabled:opacity-50"><Icon name="Clock" size={16}/>Antre</button><button onClick={()=>setShowPaymentModal(true)} disabled={cart.length===0} className="py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 transition-colors disabled:opacity-50"><Icon name="Wallet" size={16}/>Bayar</button></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -962,37 +810,19 @@
 
         function LaporanView({ transactions, onDeleteTransaction, onUpdateTransaction, formatRupiah, searchQuery, onLoadToKasir, settings, showAlert }) {
             const [filterPreset, setFilterPreset] = useState('semua');
-            const [startDate, setStartDate] = useState(''); 
-            const [endDate, setEndDate] = useState('');
+            const [startDate, setStartDate] = useState(''); const [endDate, setEndDate] = useState('');
             const [receiptData, setReceiptData] = useState(null); 
             
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const today = new Date(); today.setHours(0, 0, 0, 0);
 
             const filteredTrx = transactions.filter(t => {
                 const matchSearch = (t.id || '').toLowerCase().includes(searchQuery.toLowerCase()) || (t.customer || '').toLowerCase().includes(searchQuery.toLowerCase());
                 if (!matchSearch) return false;
-                
                 const d = t.date ? new Date(t.date) : new Date(); 
-                
-                if (filterPreset === 'hari-ini') {
-                    const dDate = new Date(d);
-                    dDate.setHours(0, 0, 0, 0);
-                    return dDate.getTime() === today.getTime();
-                } else if (filterPreset === 'mingguan') {
-                    const lastWeek = new Date(today);
-                    lastWeek.setDate(today.getDate() - 7);
-                    return d >= lastWeek;
-                } else if (filterPreset === 'bulanan') {
-                    const lastMonth = new Date(today);
-                    lastMonth.setDate(today.getDate() - 30);
-                    return d >= lastMonth;
-                } else if (filterPreset === 'kalender') {
-                    if (startDate && d < new Date(startDate)) return false; 
-                    if (endDate && d > new Date(endDate+"T23:59:59")) return false;
-                    return true;
-                }
-                
+                if (filterPreset === 'hari-ini') { const dDate = new Date(d); dDate.setHours(0, 0, 0, 0); return dDate.getTime() === today.getTime(); } 
+                else if (filterPreset === 'mingguan') { const lastWeek = new Date(today); lastWeek.setDate(today.getDate() - 7); return d >= lastWeek; } 
+                else if (filterPreset === 'bulanan') { const lastMonth = new Date(today); lastMonth.setDate(today.getDate() - 30); return d >= lastMonth; } 
+                else if (filterPreset === 'kalender') { if (startDate && d < new Date(startDate)) return false; if (endDate && d > new Date(endDate+"T23:59:59")) return false; return true; }
                 return true;
             }).sort((a,b) => new Date(b.date || Date.now()) - new Date(a.date || Date.now()));
             
@@ -1001,7 +831,6 @@
             
             const totalModal = lunasTrx.reduce((sumTrx, t) => {
                 const itemModalSum = (t.items || []).reduce((sumItem, item) => {
-                    // Bersihkan dari teks, spasi, atau undefined. Kalau kosong = 0
                     const cleanCost = Number(String(item.costPrice).replace(/[^0-9]/g, '')) || 0;
                     const cleanQty = parseFloat(item.qty) || 0;
                     return sumItem + (cleanCost * cleanQty);
@@ -1012,146 +841,126 @@
             const labaBersih = totalOmset - totalModal;
 
             const exportToExcel = () => {
-                const headers = ['ID Transaksi', 'No Antrian', 'Tanggal Masuk', 'Jadwal Ambil', 'Nama Pelanggan', 'Layanan Dibeli', 'Total Belanja (Rp)', 'Status Bayar', 'Metode Bayar', 'Status Proses'];
+                const headers = ['ID Transaksi', 'No Antrian', 'Waktu Masuk', 'Jadwal Booking', 'Nama Pelanggan', 'Layanan', 'Diskon', 'Total Akhir (Rp)', 'Status Bayar', 'Metode Bayar', 'Status Proses'];
                 const csvRows = [headers.join(';')];
-
                 filteredTrx.forEach(t => {
-                    const id = t.id || '-';
-                    const queue = t.queueNumber || '-';
-                    const date = t.date ? new Date(t.date).toLocaleDateString('id-ID') : '-';
-                    const pickup = t.pickupDate ? new Date(t.pickupDate).toLocaleDateString('id-ID') : '-';
-                    const customer = t.customer || 'Pelanggan';
-                    const items = (t.items || []).map(i => `${i.qty}${i.unit} ${i.name}`).join(', ');
-                    const total = t.total || 0;
-                    const status = t.status || '-';
-                    const method = t.paymentMethod || '-';
-                    const progress = t.progressStatus || '-';
-
-                    const row = [id, queue, date, pickup, customer, items, total, status, method, progress]
-                        .map(field => `"${String(field).replace(/"/g, '""')}"`) 
-                        .join(';');
+                    const row = [t.id || '-', t.queueNumber || '-', t.date ? new Date(t.date).toLocaleDateString('id-ID') : '-', t.pickupDate ? new Date(t.pickupDate).toLocaleDateString('id-ID') : '-', t.customer || 'Pelanggan', (t.items || []).map(i => `${i.qty}${i.unit} ${i.name}`).join(', '), t.discount || 0, t.total || 0, t.status || '-', t.paymentMethod || '-', t.progressStatus || '-'].map(field => `"${String(field).replace(/"/g, '""')}"`).join(';');
                     csvRows.push(row);
                 });
-
-                const csvString = "\uFEFF" + csvRows.join('\n');
-                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement("a");
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", `Laporan_KassQu_${new Date().toISOString().split('T')[0]}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Laporan_Barbershop_${new Date().toISOString().split('T')[0]}.csv`;
+                link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
             };
 
             return (
-                <div className="space-y-4 animate-in fade-in">
-                    <div className="flex justify-between items-center print:hidden">
-                        <h2 className="text-xl font-bold text-gray-800">Laporan Keuangan</h2>
+                <div className="space-y-5 animate-in fade-in">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 print:hidden">
+                        <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Riwayat & Laporan</h2>
                         <div className="flex gap-2">
-                            <button onClick={exportToExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs sm:text-sm font-bold shadow-sm transition-colors">
-                                <Icon name="FileSpreadsheet" size={14}/> <span className="hidden sm:inline">Cetak Excel</span><span className="sm:hidden">Excel</span>
+                            <button onClick={exportToExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold shadow-md transition-colors">
+                                <Icon name="FileSpreadsheet" size={16}/> Cetak CSV
                             </button>
-                            <button onClick={()=>window.print()} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs sm:text-sm font-bold shadow-sm transition-colors">
-                                <Icon name="Printer" size={14}/> <span className="hidden sm:inline">Cetak PDF</span><span className="sm:hidden">PDF</span>
+                            <button onClick={()=>window.print()} className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold shadow-md transition-colors">
+                                <Icon name="Printer" size={16}/> Cetak PDF
                             </button>
                         </div>
                     </div>
                     
-                    <div className="bg-white p-3 rounded-xl shadow-sm border flex flex-col gap-3 print:hidden text-sm">
-                        <div className="flex items-center gap-2">
-                            <span className="text-gray-600 font-medium whitespace-nowrap">Pilih Laporan:</span>
-                            <select 
-                                value={filterPreset} 
-                                onChange={e => {
-                                    setFilterPreset(e.target.value);
-                                    if(e.target.value !== 'kalender') { setStartDate(''); setEndDate(''); }
-                                }}
-                                className="border rounded-lg px-3 py-2 outline-none bg-gray-50 flex-1 font-bold text-gray-800 focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="semua">Semua Waktu</option>
-                                <option value="hari-ini">Hari Ini</option>
-                                <option value="mingguan">Mingguan (7 Hari Terakhir)</option>
-                                <option value="bulanan">Bulanan (30 Hari Terakhir)</option>
-                                <option value="kalender">Pilih Tanggal (Kalender)</option>
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-3 print:hidden text-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <span className="text-slate-600 font-bold uppercase tracking-wider text-xs">Periode Data:</span>
+                            <select value={filterPreset} onChange={e => { setFilterPreset(e.target.value); if(e.target.value !== 'kalender') { setStartDate(''); setEndDate(''); } }} className="border-2 border-slate-200 rounded-xl px-4 py-2 outline-none bg-slate-50 flex-1 font-bold text-slate-800 focus:border-blue-500">
+                                <option value="semua">Semua Waktu</option><option value="hari-ini">Hari Ini</option><option value="mingguan">Mingguan (7 Hari Terakhir)</option><option value="bulanan">Bulanan (30 Hari Terakhir)</option><option value="kalender">Pilih Tanggal Manual</option>
                             </select>
                         </div>
-                        
                         {filterPreset === 'kalender' && (
-                            <div className="flex gap-2 items-center pt-2 border-t mt-1 animate-in fade-in slide-in-from-top-2">
-                                <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} className="border rounded-lg px-2 py-1.5 outline-none text-gray-800 flex-1" />
-                                <span className="text-gray-400">-</span>
-                                <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} className="border rounded-lg px-2 py-1.5 outline-none text-gray-800 flex-1" />
-                                {(startDate||endDate)&&<button onClick={()=>{setStartDate('');setEndDate('');}} className="text-xs text-red-500 hover:underline font-bold px-1">Reset</button>}
+                            <div className="flex gap-3 items-center pt-3 border-t mt-1 animate-in fade-in slide-in-from-top-2">
+                                <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} className="border-2 rounded-xl px-3 py-2 outline-none text-slate-800 flex-1 font-bold" />
+                                <span className="text-slate-400 font-bold">-</span>
+                                <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} className="border-2 rounded-xl px-3 py-2 outline-none text-slate-800 flex-1 font-bold" />
+                                {(startDate||endDate)&&<button onClick={()=>{setStartDate('');setEndDate('');}} className="text-xs text-red-500 hover:underline font-bold px-2 uppercase tracking-wider">Reset</button>}
                             </div>
                         )}
                     </div>
                     
-                    <div className="grid grid-cols-3 gap-1.5 sm:gap-4 print:hidden mb-4">
-                        <div className="bg-white border rounded-xl p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center min-w-0">
-                            <p className="text-[9px] sm:text-xs text-gray-500 font-bold uppercase mb-1 truncate">Total Omset</p>
-                            <p className="text-[11px] xs:text-xs sm:text-base md:text-lg font-black text-blue-600 tracking-tight break-all sm:break-normal">{formatRupiah(totalOmset)}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 print:hidden">
+                        <div className="bg-blue-800 rounded-2xl p-5 shadow-lg text-center flex flex-col justify-center">
+                            <p className="text-xs text-blue-200 font-bold uppercase tracking-widest mb-2">Total Omset Lunas</p>
+                            <p className="text-2xl lg:text-3xl font-black text-white">{formatRupiah(totalOmset)}</p>
                         </div>
-                        <div className="bg-orange-50 border border-orange-100 rounded-xl p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center min-w-0">
-                            <p className="text-[9px] sm:text-xs text-orange-500 font-bold uppercase mb-1 truncate">Total Modal</p>
-                            <p className="text-[11px] xs:text-xs sm:text-base md:text-lg font-black text-orange-600 tracking-tight break-all sm:break-normal">{formatRupiah(totalModal)}</p>
+                        <div className="bg-orange-100 rounded-2xl p-5 shadow-sm border border-orange-200 text-center flex flex-col justify-center">
+                            <p className="text-xs text-orange-600 font-bold uppercase tracking-widest mb-2">Total Modal</p>
+                            <p className="text-2xl lg:text-3xl font-black text-orange-800">{formatRupiah(totalModal)}</p>
                         </div>
-                        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center min-w-0">
-                            <p className="text-[9px] sm:text-xs text-emerald-600 font-bold uppercase mb-1 truncate">Laba Bersih</p>
-                            <p className="text-[11px] xs:text-xs sm:text-base md:text-lg font-black text-emerald-600 tracking-tight break-all sm:break-normal">{formatRupiah(labaBersih)}</p>
+                        <div className="bg-emerald-100 rounded-2xl p-5 shadow-sm border border-emerald-200 text-center flex flex-col justify-center">
+                            <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest mb-2">Estimasi Laba Bersih</p>
+                            <p className="text-2xl lg:text-3xl font-black text-emerald-800">{formatRupiah(labaBersih)}</p>
                         </div>
                     </div>
 
-                    <div className="hidden print:block text-center border-b-2 pb-2 mb-4"><h1 className="text-xl font-bold">{settings?.storeName || 'Toko'}</h1><p className="text-xs text-gray-600">Laporan Transaksi</p></div>
-                    <div className="bg-white rounded-lg border overflow-x-auto"><table className="w-full text-left text-sm print:text-xs"><thead><tr className="bg-gray-50 border-b"><th className="p-3">Pelanggan & Antrian</th><th className="p-3">Tanggal</th><th className="p-3">Item</th><th className="p-3 text-right">Total</th><th className="p-3 text-center">Pembayaran</th><th className="p-3 text-center print:hidden">Proses</th><th className="p-3 print:hidden">Aksi</th></tr></thead><tbody className="divide-y">
-                        {filteredTrx.map(t => (
-                        <tr key={t.id} className="hover:bg-gray-50">
-                            <td className="p-3">
-                                <p className="font-bold">{t.customer || 'Pelanggan'}</p>
-                                <p className="text-[10px] text-gray-400">{t.id}</p>
-                                <span className="inline-block mt-1 bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded font-bold">Antrian {t.queueNumber || '-'}</span>
-                            </td>
-                            <td className="p-3 whitespace-nowrap">
-                                <p className="text-xs"><span className="text-gray-400">M:</span> {t.date ? new Date(t.date).toLocaleDateString('id-ID') : '-'}</p>
-                                <p className="text-xs font-bold text-red-500"><span className="text-gray-400 font-normal">A:</span> {t.pickupDate ? new Date(t.pickupDate).toLocaleDateString('id-ID') : '-'}</p>
-                            </td>
-                            <td className="p-3 text-gray-500 text-xs">{(t.items || []).map(i=>`${i.qty}${i.unit} ${i.name}`).join(', ')}</td>
-                            <td className="p-3 text-right font-bold">{formatRupiah(t.total || 0)}</td>
-                            <td className="p-3 text-center">
-                                <div className={`inline-flex flex-col items-center px-2 py-1 rounded text-[10px] font-bold ${t.status==='Lunas'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}`}>
-                                    <span>{t.status || 'Draft'}</span>
-                                    {t.status==='Lunas' && t.paymentMethod && <span className="text-[8px] opacity-70 border-t border-green-200 mt-0.5 pt-0.5">{t.paymentMethod}</span>}
-                                </div>
-                            </td>
-                            <td className="p-3 text-center print:hidden">
-                                {t.status === 'Lunas' ? (
-                                    <span className="inline-block px-2 py-1 bg-green-50 text-green-700 border border-green-200 rounded text-[10px] font-bold shadow-sm">
-                                        Diambil
-                                    </span>
-                                ) : (
-                                    <select 
-                                        value={t.progressStatus || 'Baru Masuk'} 
-                                        onChange={(e) => onUpdateTransaction({ ...t, progressStatus: e.target.value })}
-                                        className={`text-[10px] font-bold border rounded p-1 outline-none cursor-pointer ${t.progressStatus === 'Selesai' || t.progressStatus === 'Diambil' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
-                                    >
-                                        <option value="Baru Masuk">Baru Masuk</option>
-                                        <option value="Proses Cuci">Proses Cuci</option>
-                                        <option value="Proses Setrika">Proses Setrika</option>
-                                        <option value="Selesai">Selesai</option>
-                                        <option value="Diambil">Diambil</option>
-                                    </select>
-                                )}
-                            </td>
-                            <td className="p-3 print:hidden flex flex-col gap-2">
-                                <button onClick={()=>setReceiptData(t)} className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-2 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border shadow-sm w-full"><Icon name="Receipt" size={12}/> Struk</button>
-                                {t.status==='Belum Lunas' && <button onClick={()=>onLoadToKasir(t)} className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-2 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border shadow-sm w-full"><Icon name="Wallet" size={12}/> Bayar</button>}
-                            </td>
-                        </tr>
-                        ))}
-                    </tbody></table></div>
-                    <div className="hidden print:block text-right font-bold text-lg p-2 mt-4">Total Lunas: {formatRupiah(totalOmset)} <br/> Laba Bersih: {formatRupiah(labaBersih)}</div>
-                    
+                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm print:text-xs">
+                                <thead>
+                                    <tr className="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                                        <th className="p-4 whitespace-nowrap">Pelanggan</th>
+                                        <th className="p-4">Tanggal</th>
+                                        <th className="p-4">Layanan</th>
+                                        <th className="p-4 text-right">Total</th>
+                                        <th className="p-4 text-center">Status</th>
+                                        <th className="p-4 text-center print:hidden">Proses</th>
+                                        <th className="p-4 text-center print:hidden">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredTrx.map(t => (
+                                    <tr key={t.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="p-4">
+                                            <p className="font-bold text-slate-800">{t.customer || 'Pelanggan'}</p>
+                                            <p className="text-[10px] text-slate-400 font-mono mt-0.5">{t.id}</p>
+                                            <span className="inline-block mt-1.5 bg-slate-200 text-slate-700 text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Antrean {t.queueNumber || '-'}</span>
+                                        </td>
+                                        <td className="p-4 whitespace-nowrap">
+                                            <p className="text-xs font-bold text-slate-700 mb-1"><span className="text-slate-400 font-medium">In:</span> {t.date ? new Date(t.date).toLocaleDateString('id-ID') : '-'}</p>
+                                            <p className="text-xs font-bold text-blue-600"><span className="text-slate-400 font-medium">Jadwal:</span> {t.pickupDate ? new Date(t.pickupDate).toLocaleDateString('id-ID') : '-'}</p>
+                                        </td>
+                                        <td className="p-4 text-slate-600 text-xs font-medium max-w-[200px] truncate">{(t.items || []).map(i=>`${i.qty} ${i.name}`).join(', ')}</td>
+                                        <td className="p-4 text-right">
+                                            <p className="font-black text-slate-800">{formatRupiah(t.total || 0)}</p>
+                                            {t.discount > 0 && <p className="text-[10px] font-bold text-emerald-500">Diskon: {formatRupiah(t.discount)}</p>}
+                                        </td>
+                                        <td className="p-4 text-center">
+                                            <div className={`inline-flex flex-col items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${t.status==='Lunas'?'bg-emerald-100 text-emerald-700':'bg-orange-100 text-orange-700'}`}>
+                                                <span>{t.status || 'Draft'}</span>
+                                                {t.status==='Lunas' && t.paymentMethod && <span className="text-[9px] opacity-70 border-t border-current mt-0.5 pt-0.5">{t.paymentMethod}</span>}
+                                            </div>
+                                        </td>
+                                        <td className="p-4 text-center print:hidden">
+                                            {t.status === 'Lunas' && t.progressStatus === 'Selesai' ? (
+                                                <span className="inline-block px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-bold uppercase tracking-wider">Selesai</span>
+                                            ) : (
+                                                <select 
+                                                    value={t.progressStatus || 'Baru Masuk'} 
+                                                    onChange={(e) => onUpdateTransaction({ ...t, progressStatus: e.target.value })}
+                                                    className={`text-[10px] font-bold uppercase tracking-wider border-2 rounded-lg p-1.5 outline-none cursor-pointer ${t.progressStatus === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : t.progressStatus === 'Sedang Dicukur' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-white text-slate-700 border-slate-200'}`}
+                                                >
+                                                    <option value="Baru Masuk">Baru Masuk</option>
+                                                    <option value="Menunggu Antrean">Menunggu Antrean</option>
+                                                    <option value="Sedang Dicukur">Sedang Dicukur</option>
+                                                    <option value="Selesai">Selesai</option>
+                                                </select>
+                                            )}
+                                        </td>
+                                        <td className="p-4 print:hidden flex flex-col gap-2">
+                                            <button onClick={()=>setReceiptData(t)} className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"><Icon name="Receipt" size={14}/> Struk</button>
+                                            {t.status==='Belum Lunas' && <button onClick={()=>onLoadToKasir(t)} className="bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors shadow-sm"><Icon name="Wallet" size={14}/> Bayar</button>}
+                                        </td>
+                                    </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                     {receiptData && <ReceiptModal data={receiptData} settings={settings} onClose={()=>setReceiptData(null)} formatRupiah={formatRupiah} showAlert={showAlert} />}
                 </div>
             );
@@ -1163,69 +972,75 @@
             const handleLogoUpload = async (e) => { if(e.target.files[0]) setFormData({...formData, logo: await compressImage(e.target.files[0])}); };
             const handleSave = (e) => { e.preventDefault(); onSaveSettings(formData); setSaved(true); setTimeout(()=>setSaved(false), 3000); };
             return (
-                <div className="max-w-2xl mx-auto space-y-4 animate-in fade-in">
-                    <h2 className="text-xl font-bold">Setup Toko</h2>
-                    <div className="bg-white rounded-xl shadow-sm border p-6"><form onSubmit={handleSave} className="space-y-4">
-                        <div className="flex items-center gap-4 border-b pb-4"><div className="w-16 h-16 bg-blue-50 rounded-full border-2 border-dashed flex items-center justify-center relative overflow-hidden">{formData.logo ? <img src={formData.logo} className="w-full h-full object-cover"/> : <Icon name="ImageIcon" size={24}/>}<input type="file" accept="image/*" onChange={handleLogoUpload} className="absolute inset-0 opacity-0 cursor-pointer"/></div><div><p className="text-sm font-medium">Logo Toko</p><button type="button" onClick={()=>setFormData({...formData, logo:null})} className="text-xs text-red-500">Hapus</button></div></div>
-                        <div><label className="text-sm font-medium">Nama Toko</label><input type="text" required value={formData.storeName || ''} onChange={e=>setFormData({...formData, storeName:e.target.value})} className="w-full px-3 py-2 border rounded outline-none"/></div>
-                        <div><label className="text-sm font-medium">Alamat</label><textarea required rows="2" value={formData.address || ''} onChange={e=>setFormData({...formData, address:e.target.value})} className="w-full px-3 py-2 border rounded outline-none"/></div>
-                        <div><label className="text-sm font-medium">No Telp</label><input type="text" required value={formData.phone || ''} onChange={e=>setFormData({...formData, phone:e.target.value})} className="w-full px-3 py-2 border rounded outline-none"/></div>
-                        <div className="pt-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-1">
-                                <Icon name="Printer" size={16} className="text-blue-500" /> Pesan Bawah Struk (Footer)
-                            </label>
-                            <input type="text" value={formData.receiptFooter || ''} onChange={e=>setFormData({...formData, receiptFooter:e.target.value})} placeholder="Contoh: Terima kasih, sukses selalu!" className="w-full px-3 py-2 border rounded outline-none bg-blue-50/30 focus:bg-white focus:ring-2 focus:ring-blue-500"/>
-                            <p className="text-[10px] text-gray-500 mt-1">Pesan ini akan otomatis dicetak di bagian paling bawah struk dan dikirim ke WA.</p>
+                <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in">
+                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Pengaturan Barbershop</h2>
+                    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8"><form onSubmit={handleSave} className="space-y-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-6 border-b border-slate-100 pb-6">
+                            <div className="w-24 h-24 bg-slate-50 rounded-full border-4 border-slate-100 flex items-center justify-center relative overflow-hidden group">
+                                {formData.logo ? <img src={formData.logo} className="w-full h-full object-cover"/> : <Icon name="Scissors" size={32} className="text-slate-300"/>}
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><span className="text-[10px] text-white font-bold uppercase">Ubah</span></div>
+                                <input type="file" accept="image/*" onChange={handleLogoUpload} className="absolute inset-0 opacity-0 cursor-pointer"/>
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Logo Barbershop</p>
+                                <button type="button" onClick={()=>setFormData({...formData, logo:null})} className="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-bold">Hapus Logo</button>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center pt-2 border-t mt-2">{saved?<span className="text-green-600 text-sm font-bold">Tersimpan!</span>:<span></span>}<button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded font-bold">Simpan Info Toko</button></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nama Barbershop</label><input type="text" required value={formData.storeName || ''} onChange={e=>setFormData({...formData, storeName:e.target.value})} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-blue-500 font-bold"/></div>
+                            <div><label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">No. WhatsApp / Telp</label><input type="text" required value={formData.phone || ''} onChange={e=>setFormData({...formData, phone:e.target.value})} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-blue-500 font-bold"/></div>
+                        </div>
+                        <div><label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Alamat Lengkap</label><textarea required rows="3" value={formData.address || ''} onChange={e=>setFormData({...formData, address:e.target.value})} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-blue-500 font-medium"/></div>
+                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                            <label className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                                <Icon name="Printer" size={16} className="text-blue-600" /> Pesan Penutup Struk
+                            </label>
+                            <textarea rows="2" value={formData.receiptFooter || ''} onChange={e=>setFormData({...formData, receiptFooter:e.target.value})} placeholder="Contoh: Terima kasih, sukses selalu!" className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-blue-500 font-mono text-sm"/>
+                            <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-wider">Teks ini dicetak di bawah struk fisik & nota WhatsApp.</p>
+                        </div>
+                        <div className="flex justify-end items-center pt-4 border-t border-slate-100 gap-4">
+                            {saved&&<span className="text-emerald-500 text-sm font-black uppercase tracking-wider">✓ Tersimpan</span>}
+                            <button type="submit" className="bg-blue-700 hover:bg-blue-800 text-white px-8 py-3.5 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-900/20 transition-all">Simpan Profil</button>
+                        </div>
                     </form></div>
                 </div>
             );
         }
 
         function ReceiptModal({ data, settings, onClose, formatRupiah, showAlert }) {
-            const handleWA = () => { if(data.customerPhone) window.open(`https://wa.me/${data.customerPhone.startsWith('0')?'62'+data.customerPhone.slice(1):data.customerPhone}?text=${encodeURIComponent(`Halo *${data.customer || 'Pelanggan'}*,\nPesanan dari *${settings?.storeName || 'Toko'}*:\nNo. Antrian: *${data.queueNumber || '-'}*\nID: *${data.id}*\nTotal: *${formatRupiah(data.total || 0)}*\nPembayaran: *${data.status || '-'} ${data.paymentMethod ? `(${data.paymentMethod})` : ''}*\nProses: *${data.progressStatus || 'Baru Masuk'}*\nAmbil: *${data.pickupDate ? new Date(data.pickupDate).toLocaleDateString('id-ID') : '-'}*\n\n_${settings?.receiptFooter || '*** TERIMA KASIH ***'}_`)}`,'_blank'); };
-            const handleBT = async () => { 
-                showAlert("Sambungkan printer dari Bluetooth settings HP lalu klik Cetak PDF jika menggunakan PrintShare/sejenisnya, atau gunakan browser Chrome Android untuk fitur ini.", "info"); 
-            };
+            const handleWA = () => { if(data.customerPhone) window.open(`https://wa.me/${data.customerPhone.startsWith('0')?'62'+data.customerPhone.slice(1):data.customerPhone}?text=${encodeURIComponent(`Halo *${data.customer || 'Pelanggan'}*,\nBerikut rincian pesanan dari *${settings?.storeName || 'Barbershop'}*:\n\nNo. Antrean: *${data.queueNumber || '-'}*\nID Ref: *${data.id}*\nTotal Tagihan: *${formatRupiah(data.total || 0)}*\nStatus: *${data.status || '-'} ${data.paymentMethod && data.paymentMethod !== '-' ? `(${data.paymentMethod})` : ''}*\nProses: *${data.progressStatus || 'Baru Masuk'}*\nJadwal Booking: *${data.pickupDate ? new Date(data.pickupDate).toLocaleDateString('id-ID') : '-'}*\n\n_${settings?.receiptFooter || '*** TERIMA KASIH ***'}_`)}`,'_blank'); };
             return (
-                <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200"><div className="bg-white rounded-xl w-full max-w-sm flex flex-col max-h-[85vh]">
-                    <div id="receipt-content" className="p-6 overflow-y-auto font-mono text-xs">
-                        <div className="text-center mb-4">{settings?.logo&&<img src={settings.logo} className="w-12 h-12 mx-auto mb-1 grayscale" />}<h2 className="font-bold text-sm uppercase">{settings?.storeName || 'Toko Kasir'}</h2><p>{settings?.address || ''}</p><p>{settings?.phone || ''}</p></div>
-                        <div className="border-y border-dashed py-2 mb-2 space-y-1">
-                            <div className="flex justify-between items-center"><span className="text-sm font-bold bg-gray-100 px-2 py-0.5 rounded">Antrian: {data.queueNumber || '-'}</span><span className="text-[10px] text-gray-500">{data.id}</span></div>
-                            <div className="flex justify-between"><span>Tanggal:</span><span>{data.date ? new Date(data.date).toLocaleDateString('id-ID') : '-'}</span></div>
-                            <div className="flex justify-between"><span>Nama:</span><span className="font-bold">{data.customer || 'Pelanggan'}</span></div>
-                            <div className="flex justify-between"><span>Proses:</span><span className="font-bold">{data.progressStatus || 'Baru Masuk'}</span></div>
-                            {data.pickupDate && (
-                                <div className="text-center text-[10px] font-bold text-red-500 border-t border-dashed mt-2 pt-1">
-                                    Jadwal Ambil: {new Date(data.pickupDate).toLocaleDateString('id-ID')}
-                                </div>
-                            )}
+                <div className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm"><div className="bg-white rounded-3xl w-full max-w-sm flex flex-col max-h-[85vh] overflow-hidden shadow-2xl">
+                    <div id="receipt-content" className="p-8 overflow-y-auto font-mono text-xs text-slate-800 bg-[#fdfbf7]">
+                        <div className="text-center mb-6">{settings?.logo&&<img src={settings.logo} className="w-16 h-16 mx-auto mb-2 grayscale contrast-125" />}<h2 className="font-black text-lg uppercase tracking-widest">{settings?.storeName || 'Barbershop'}</h2><p className="text-[10px] mt-1">{settings?.address || ''}</p><p className="text-[10px]">{settings?.phone || ''}</p></div>
+                        <div className="border-y-2 border-dashed border-slate-300 py-3 mb-4 space-y-1.5">
+                            <div className="flex justify-between items-center"><span className="text-sm font-black bg-slate-800 text-white px-2 py-0.5 rounded">ANTREAN: {data.queueNumber || '-'}</span><span className="text-[10px] text-slate-500">{data.id}</span></div>
+                            <div className="flex justify-between mt-2"><span>Tgl Nota:</span><span>{data.date ? new Date(data.date).toLocaleDateString('id-ID') : '-'}</span></div>
+                            <div className="flex justify-between"><span>Pelanggan:</span><span className="font-bold">{data.customer || 'Pelanggan'}</span></div>
+                            {data.pickupDate && <div className="text-center text-xs font-black text-slate-800 border-t-2 border-dashed border-slate-300 mt-3 pt-2">Jadwal: {new Date(data.pickupDate).toLocaleDateString('id-ID')}</div>}
                         </div>
-                        <div className="space-y-1 mb-2">{(data.items || []).map((i,x)=><div key={x}><div className="font-bold">{i.name}</div><div className="flex justify-between text-gray-600"><span>{i.qty} x {formatRupiah(i.price)}</span><span>{formatRupiah(i.price*i.qty)}</span></div></div>)}</div>
-                        <div className="border-t border-dashed pt-2 space-y-1">
-                            <div className="flex justify-between font-bold text-sm"><span>TOTAL</span><span>{formatRupiah(data.total || 0)}</span></div>
-                            <div className="flex justify-between">
-                                <span>Status:</span>
-                                <span className={`font-bold ${data.status === 'Lunas' ? '' : 'text-red-500'}`}>{data.status || '-'} {data.paymentMethod && data.status === 'Lunas' ? `(${data.paymentMethod})` : ''}</span>
-                            </div>
-                            {data.status === 'Lunas' && data.amountReceived > 0 && (
-                                <>
-                                    <div className="flex justify-between text-gray-500"><span>Diterima:</span><span>{formatRupiah(data.amountReceived)}</span></div>
-                                    <div className="flex justify-between text-gray-500"><span>Kembali:</span><span>{formatRupiah(data.change || 0)}</span></div>
-                                </>
-                            )}
+                        <div className="space-y-3 mb-4">{(data.items || []).map((i,x)=><div key={x}><div className="font-bold uppercase">{i.name}</div><div className="flex justify-between text-slate-600 mt-0.5"><span>{i.qty}x @ {formatRupiah(i.price)}</span><span>{formatRupiah(i.price*i.qty)}</span></div></div>)}</div>
+                        <div className="border-t-2 border-dashed border-slate-300 pt-3 space-y-1.5">
+                            <div className="flex justify-between font-medium"><span>Subtotal</span><span>{formatRupiah(data.total + (data.discount || 0))}</span></div>
+                            {data.discount > 0 && <div className="flex justify-between font-medium"><span>Diskon</span><span>-{formatRupiah(data.discount)}</span></div>}
+                            <div className="flex justify-between font-black text-base mt-2 pt-2 border-t border-slate-200"><span>TOTAL</span><span>{formatRupiah(data.total || 0)}</span></div>
+                            <div className="flex justify-between mt-4"><span>Status:</span><span className={`font-black uppercase ${data.status === 'Lunas' ? '' : 'text-slate-500'}`}>{data.status || '-'} {data.paymentMethod && data.status === 'Lunas' ? `(${data.paymentMethod})` : ''}</span></div>
+                            {data.status === 'Lunas' && data.amountReceived > 0 && (<><div className="flex justify-between text-slate-500"><span>Diterima:</span><span>{formatRupiah(data.amountReceived)}</span></div><div className="flex justify-between text-slate-500"><span>Kembali:</span><span>{formatRupiah(data.change || 0)}</span></div></>)}
                         </div>
-                        <div className="text-center mt-6 text-gray-500 whitespace-pre-wrap">{settings?.receiptFooter || '*** TERIMA KASIH ***'}</div>
+                        <div className="text-center mt-8 text-slate-600 font-bold whitespace-pre-wrap">{settings?.receiptFooter || '*** TERIMA KASIH ***'}</div>
                     </div>
-                    <div className="p-3 bg-gray-50 grid grid-cols-2 gap-2 border-t print:hidden"><button onClick={handleWA} className="py-2 bg-green-500 text-white rounded font-bold text-xs flex items-center justify-center gap-1"><Icon name="MessageCircle" size={14}/> WA</button><button onClick={handleBT} className="py-2 bg-indigo-500 text-white rounded font-bold text-xs flex items-center justify-center gap-1"><Icon name="Bluetooth" size={14}/> BT Print</button><button onClick={()=>window.print()} className="py-2 bg-blue-600 text-white rounded font-bold text-xs flex items-center justify-center gap-1"><Icon name="Printer" size={14}/> Cetak</button><button onClick={onClose} className="py-2 bg-white text-gray-700 rounded border font-bold text-xs">Tutup</button></div>
-                </div><style dangerouslySetInnerHTML={{__html: `@media print { body * { visibility: hidden; } #receipt-content, #receipt-content * { visibility: visible; } #receipt-content { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; } }`}} /></div>
+                    <div className="p-4 bg-slate-50 grid grid-cols-2 gap-3 border-t border-slate-200 print:hidden">
+                        <button onClick={handleWA} className="py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> Kirim WA</button>
+                        <button onClick={()=>window.print()} className="py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Printer" size={16}/> Cetak</button>
+                        <button onClick={onClose} className="py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 col-span-2 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">Tutup Nota</button>
+                    </div>
+                </div>
+                <style dangerouslySetInnerHTML={{__html: `@media print { body * { visibility: hidden; } #receipt-content, #receipt-content * { visibility: visible; } #receipt-content { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; background: white; } }`}} /></div>
             );
         }
 
         function NavItem({ icon, label, isActive, onClick }) {
-            return (<button onClick={onClick} className={`flex flex-col items-center justify-center w-16 transition-colors ${isActive ? 'text-blue-600' : 'text-gray-400'}`}><div className={`${isActive ? 'scale-110 mb-1' : 'scale-100 mb-0'}`}>{icon}</div><span className={`text-[10px] font-medium ${isActive ? 'opacity-100' : 'opacity-0 h-0'}`}>{label}</span></button>);
+            return (<button onClick={onClick} className={`flex flex-col items-center justify-center w-16 transition-colors ${isActive ? 'text-blue-700' : 'text-slate-400 hover:text-slate-600'}`}><div className={`transition-transform ${isActive ? 'scale-110 mb-1' : 'scale-100 mb-0'}`}>{icon}</div><span className={`text-[10px] font-black uppercase tracking-wider transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 h-0'}`}>{label}</span></button>);
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
