@@ -348,7 +348,7 @@
                                     <div>
                                         <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Pilih Layanan</label>
                                         <select required value={selectedService} onChange={e=>setSelectedService(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors">
-                                            <option value="" disabled>-- Pilih Layanan Utama --</option>
+                                            <option value="" disabled>Pilih Layanan Utama</option>
                                             {bookableProducts.map(p => {
                                                 const effectivePrice = (p.price || 0) - (p.discount || 0);
                                                 return (
