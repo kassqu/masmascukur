@@ -43,8 +43,8 @@
 
         const KASSQU_LOGO = "https://raw.githubusercontent.com/kassqu/masmascukur/main/logo.png";
         const LOGIN_BG_IMAGE = "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop"; 
+        const SPLASH_BG_IMAGE = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop"; 
 
-        // Ganti dengan URL deployment Google Apps Script lu yang aktif
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxDC_IM-S928LESR3Uj_bSizoC4-AVuCYuRIvzOm_2C2j0klnhFnMJZJpyRf66x2J1I/exec"; 
 
         const formatThousand = (val) => {
@@ -103,7 +103,8 @@
             logo: KASSQU_LOGO,
             receiptFooter: '*** TERIMA KASIH ***\nStay Handsome!',
             modalLaci: 0,
-            categories: ['Potong Rambut', 'Shaving', 'Treatment', 'Produk']
+            categories: ['Potong Rambut', 'Shaving', 'Treatment', 'Produk'],
+            bookableCategories: ['Potong Rambut', 'Treatment']
         };
 
         const INITIAL_PRODUCTS = [
@@ -207,13 +208,23 @@
             );
         }
 
-        function LandingView({ settings, products, transactions, onSaveTransaction, onGoToLogin, formatRupiah, showAlert }) {
+        function LandingView({ settings, products, transactions, onSaveTransaction, onGoToLogin, formatRupiah, showAlert, isLoggedIn }) {
             const [customerName, setCustomerName] = useState('');
             const [customerPhone, setCustomerPhone] = useState('');
             const [pickupDate, setPickupDate] = useState(new Date().toISOString().split('T')[0]);
             const [pickupTime, setPickupTime] = useState('10:00');
             const [selectedService, setSelectedService] = useState('');
             const [isSubmitting, setIsSubmitting] = useState(false);
+            
+            const bookableCats = settings?.bookableCategories || settings?.categories || [];
+            const bookableProducts = products.filter(p => bookableCats.includes(p.category));
+
+            const timeSlots = [];
+            for (let i = 10; i <= 22; i++) {
+                timeSlots.push(`${i.toString().padStart(2, '0')}:00`);
+                if (i !== 22) timeSlots.push(`${i.toString().padStart(2, '0')}:30`);
+            }
+
             const activeQueue = transactions
                 .filter(t => t.progressStatus !== 'Selesai')
                 .sort((a, b) => new Date(a.pickupDate || 0) - new Date(b.pickupDate || 0));
@@ -249,7 +260,6 @@
                 setIsSubmitting(false);
                 showAlert(`Booking Berhasil! Nomor Antrean Anda: ${queueNumber}`, 'success');
                 
-                // Kirim Notifikasi WA Otomatis ke Admin
                 const adminNumber = settings?.adminPhone || settings?.phone || '6281234567890';
                 const cleanAdminPhone = adminNumber.startsWith('0') ? '62' + adminNumber.slice(1) : adminNumber.replace(/[^0-9]/g, '');
                 const waText = `*[BOOKING BARU - ${settings?.storeName || 'Barbershop'}]*\n\n` +
@@ -275,7 +285,7 @@
                                 <h1 className="font-black text-gray-800 text-lg uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1>
                             </div>
                             <button onClick={onGoToLogin} className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-md">
-                                <Icon name="Lock" size={14}/> Login Kasir
+                                <Icon name={isLoggedIn ? "UserCircle" : "Lock"} size={14}/> {isLoggedIn ? 'Ke Kasir' : 'Login Admin'}
                             </button>
                         </div>
                     </header>
@@ -288,6 +298,23 @@
                                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-widest drop-shadow-lg mb-4">Ganteng Maksimal!</h2>
                                 <p className="text-emerald-50 text-sm md:text-base max-w-md mx-auto mb-6">Booking jadwal cukur kamu sekarang. Cek jadwal di bawah agar tidak tabrakan (Durasi per sesi ± 30-45 menit).</p>
                                 <a href="#booking" className="bg-white text-emerald-900 px-8 py-3.5 rounded-2xl font-black uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all">Booking Sekarang</a>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-6 text-white shadow-lg flex items-center gap-5 hover:scale-[1.02] transition-transform">
+                                <div className="bg-white/20 p-4 rounded-2xl shrink-0"><Icon name="Tag" size={32} /></div>
+                                <div>
+                                    <h4 className="font-bold text-xl drop-shadow-sm uppercase tracking-tight mb-1.5">Promo Opening! 🔥</h4>
+                                    <p className="text-sm font-medium leading-snug drop-shadow-sm text-white/95">Haircut & Styling cuman <span className="bg-white text-orange-600 px-1.5 py-0.5 rounded font-black text-xs">20K</span> (Normal 30K) & diskon up to <strong className="font-black underline decoration-2 underline-offset-2">30%</strong> untuk service lainnya.<br/><span className="inline-block mt-2 text-[10px] bg-black/20 px-2 py-1 rounded-lg font-bold">Berlaku: 1 Sept - 4 Okt 2026</span></p>
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-teal-500 to-emerald-600 rounded-3xl p-6 text-white shadow-lg flex items-center gap-5 hover:scale-[1.02] transition-transform">
+                                <div className="bg-white/20 p-4 rounded-2xl shrink-0"><Icon name="Scissors" size={32} /></div>
+                                <div>
+                                    <h4 className="font-bold text-xl drop-shadow-sm uppercase tracking-tight mb-1.5">Loyalty Program ✂️</h4>
+                                    <p className="text-sm font-medium leading-snug drop-shadow-sm text-white/95">Cukur makin hemat! Kumpulkan poin, di Mas-Mas Cukur <strong className="font-black text-yellow-300">10x cukur, dapat 1x GRATIS cukur</strong>.</p>
+                                </div>
                             </div>
                         </div>
 
@@ -310,14 +337,19 @@
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Jam</label>
-                                            <input type="time" required value={pickupTime} onChange={e=>setPickupTime(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors" />
+                                            <select required value={pickupTime} onChange={e=>setPickupTime(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors cursor-pointer">
+                                                <option value="" disabled>-- Pilih Jam --</option>
+                                                {timeSlots.map(time => (
+                                                    <option key={time} value={time}>{time} WIB</option>
+                                                ))}
+                                            </select>
                                         </div>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Pilih Layanan</label>
                                         <select required value={selectedService} onChange={e=>setSelectedService(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors">
                                             <option value="" disabled>-- Pilih Layanan Utama --</option>
-                                            {products.map(p => {
+                                            {bookableProducts.map(p => {
                                                 const effectivePrice = (p.price || 0) - (p.discount || 0);
                                                 return (
                                                     <option key={p.id} value={p.id}>{p.name} - {formatRupiah(effectivePrice > 0 ? effectivePrice : p.price)}</option>
@@ -335,9 +367,9 @@
 
                             <div className="space-y-6">
                                 <div className="bg-slate-800 rounded-3xl p-6 text-white shadow-lg">
-                                    <h3 className="text-sm font-black uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2"><Icon name="Tag" size={18}/> Layanan Kami</h3>
+                                    <h3 className="text-sm font-black uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2"><Icon name="Tag" size={18}/> Layanan Utama Kami (Harga Spesial Promo)</h3>
                                     <div className="space-y-3">
-                                        {products.slice(0,4).map(p => {
+                                        {bookableProducts.slice(0,4).map(p => {
                                             const effectivePrice = (p.price || 0) - (p.discount || 0);
                                             return (
                                                 <div key={p.id} className="flex justify-between items-center border-b border-slate-700 pb-2">
@@ -367,7 +399,7 @@
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center justify-between">
                                                                 <p className="font-bold text-sm text-slate-800 truncate">{q.customer}</p>
-                                                                <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full shrink-0 ml-1">📅 {dateStr} ⏰ {timeStr}</span>
+                                                                <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full shrink-0 ml-1">{dateStr} {timeStr}</span>
                                                             </div>
                                                             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">{q.items[0]?.name || 'Layanan'}</p>
                                                         </div>
@@ -505,14 +537,26 @@
                 const currentCats = settings?.categories || [];
                 if (currentCats.map(c=>c.toLowerCase()).includes(trimmed.toLowerCase())) { showAlert('Kategori tersebut sudah ada di daftar!', 'error'); return; }
                 const updatedCats = [...currentCats, trimmed];
-                onSaveSettings({ ...settings, categories: updatedCats });
+                const updatedBookable = [...(settings?.bookableCategories || currentCats), trimmed];
+                onSaveSettings({ ...settings, categories: updatedCats, bookableCategories: updatedBookable });
                 setNewCategory(''); showAlert('Kategori baru berhasil ditambahkan!', 'success');
             };
             const handleDeleteCategory = (catToDelete) => {
                 const currentCats = settings?.categories || [];
                 const updatedCats = currentCats.filter(c => c !== catToDelete);
-                onSaveSettings({ ...settings, categories: updatedCats });
+                const updatedBookable = (settings?.bookableCategories || currentCats).filter(c => c !== catToDelete);
+                onSaveSettings({ ...settings, categories: updatedCats, bookableCategories: updatedBookable });
                 if (category === catToDelete && updatedCats.length > 0) setCategory(updatedCats[0]);
+            };
+            const toggleBookableCategory = (cat) => {
+                const currentBookable = settings?.bookableCategories || settings?.categories || [];
+                let updatedBookable;
+                if (currentBookable.includes(cat)) {
+                    updatedBookable = currentBookable.filter(c => c !== cat);
+                } else {
+                    updatedBookable = [...currentBookable, cat];
+                }
+                onSaveSettings({ ...settings, bookableCategories: updatedBookable });
             };
 
             return (
@@ -600,14 +644,22 @@
                                         <input type="text" value={newCategory} onChange={e=>setNewCategory(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddCategory()} placeholder="Cth: Pomade..." className="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-sm font-bold" />
                                         <button onClick={handleAddCategory} className="bg-slate-800 hover:bg-slate-900 text-white px-5 py-3 rounded-xl font-bold transition-colors text-sm">Tambah</button>
                                     </div>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-3">Kategori Tersedia:</p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-3">Kategori Tersedia (Centang = Tampil di Booking):</p>
                                     <div className="space-y-2 overflow-y-auto pr-2 custom-scroll">
-                                        {catList.map((cat, idx) => (
-                                            <div key={idx} className="flex justify-between items-center p-4 bg-white border-2 border-slate-100 rounded-xl hover:border-slate-300 transition-colors">
-                                                <span className="font-bold text-slate-700 text-sm">{cat}</span>
-                                                <button onClick={()=>handleDeleteCategory(cat)} className="text-red-400 hover:bg-red-50 p-2 rounded-lg transition-colors"><Icon name="Trash2" size={16}/></button>
-                                            </div>
-                                        ))}
+                                        {catList.map((cat, idx) => {
+                                            const isBookable = (settings?.bookableCategories || catList).includes(cat);
+                                            return (
+                                                <div key={idx} className="flex justify-between items-center p-4 bg-white border-2 border-slate-100 rounded-xl hover:border-slate-300 transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        <button onClick={() => toggleBookableCategory(cat)} className={`p-1.5 rounded-lg transition-colors flex items-center justify-center border-2 ${isBookable ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-slate-50 border-slate-200 text-slate-300'}`} title={isBookable ? 'Tampil di Halaman Booking' : 'Sembunyikan dari Booking'}>
+                                                            <Icon name="CheckCircle2" size={18}/>
+                                                        </button>
+                                                        <span className="font-bold text-slate-700 text-sm">{cat}</span>
+                                                    </div>
+                                                    <button onClick={()=>handleDeleteCategory(cat)} className="text-red-400 hover:bg-red-50 p-2 rounded-lg transition-colors"><Icon name="Trash2" size={16}/></button>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                                 <div className="p-5 border-t bg-slate-50">
@@ -1167,7 +1219,6 @@
 
                 fetchInitialData();
 
-                // Timer transisi dari splash screen ke mode landing page publik
                 setTimeout(() => {
                     if (isMounted) {
                         const savedUser = localStorage.getItem('kassqu_user');
@@ -1239,14 +1290,14 @@
 
             if (appMode === 'splash') {
                 return (
-                    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white bg-gray-900 touch-none overscroll-none" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white bg-gray-900 touch-none overscroll-none" style={{ backgroundImage: `url('${SPLASH_BG_IMAGE}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                         <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-md"></div>
                         <div className="relative z-10 flex flex-col items-center animate-in fade-in duration-700">
                             <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-2xl border-4 border-emerald-500/30 mb-4 p-2 overflow-hidden">
                                 <img src={KASSQU_LOGO} alt="KassQu Logo" className="w-full h-full object-contain" onError={(e) => { e.target.onerror = null; e.target.parentElement.innerHTML = '<span class="text-5xl font-black text-emerald-600 tracking-tighter italic">KQ</span>'; }} />
                             </div>
                             <h1 className="text-4xl md:text-5xl font-black tracking-tight drop-shadow-lg text-white mb-1">KassQu</h1>
-                            <p className="text-xs font-bold tracking-[0.3em] uppercase text-emerald-400 mb-10">POS System </p>
+                            <p className="text-xs font-bold tracking-[0.3em] uppercase text-emerald-400 mb-10">Official Partner of Mas-Mas Cukur</p>
                             <div className="w-10 h-10 rounded-full animate-spin border-[4px] border-white/20 border-t-emerald-500"></div>
                         </div>
                     </div>
@@ -1254,7 +1305,7 @@
             }
 
             if (appMode === 'landing') {
-                return <LandingView settings={settings} products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} onGoToLogin={() => setAppMode('login')} formatRupiah={formatRupiah} showAlert={showAlert} />;
+                return <LandingView settings={settings} products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} onGoToLogin={() => { if(isLoggedIn) { setAppMode('cashier'); setActiveTab('dashboard'); } else { setAppMode('login'); } }} formatRupiah={formatRupiah} showAlert={showAlert} isLoggedIn={isLoggedIn} />;
             }
 
             if (appMode === 'login') {
@@ -1274,7 +1325,7 @@
                             <form onSubmit={handleLogin} className="space-y-4">
                                 <input type="text" name="username" placeholder="Username" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
                                 <input type="password" name="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
-                                <button type="submit" disabled={isDbLoading} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-lg border border-emerald-500/50 hover:shadow-emerald-500/50 transition-all">{isDbLoading ? 'Memproses...' : 'Login Kasir'}</button>
+                                <button type="submit" disabled={isDbLoading} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-lg border border-emerald-500/50 hover:shadow-emerald-500/50 transition-all">{isDbLoading ? 'Memproses...' : 'Login Admin'}</button>
                             </form>
                         </div>
                     </div>
@@ -1283,21 +1334,21 @@
 
             return (
                 <div className="min-h-[100dvh] bg-gray-50 flex flex-col font-sans pb-[calc(82px+env(safe-area-inset-bottom))] print:pb-0 print:bg-white">
-                    <header className="bg-emerald-800 shadow-sm sticky top-0 z-20 print:hidden" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
+                    <header className="bg-emerald-800 shadow-sm sticky top-0 z-20 print:hidden text-white" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
                         <div className="max-w-[1920px] mx-auto px-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                {settings?.logo ? <img src={settings.logo} alt="Logo" className="w-10 h-10 object-cover rounded-full border border-gray-250" /> : <div className="w-10 h-10 bg-emerald-700 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
-                                <div><h1 className="font-bold text-gray-800 text-sm sm:text-lg leading-tight uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1><p className="text-[10px] text-gray-500 font-medium flex items-center gap-1"><Icon name="UserCircle" size={12}/> {currentUser?.namaKasir || 'Staff'}</p></div>
+                                {settings?.logo ? <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200 overflow-hidden p-0.5"><img src={settings.logo} alt="Logo" className="w-full h-full object-contain" /></div> : <div className="w-10 h-10 bg-emerald-700 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
+                                <div><h1 className="font-bold text-white text-sm sm:text-lg leading-tight uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1><p className="text-[10px] text-emerald-200 font-medium flex items-center gap-1"><Icon name="UserCircle" size={12}/> {currentUser?.namaKasir || 'Staff'}</p></div>
                             </div>
                             <div className="hidden sm:flex flex-1 max-w-lg mx-8 relative">
                                 <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                <input type="text" placeholder="Cari pesanan, produk..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-11 pr-4 py-2.5 bg-gray-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all"/>
+                                <input type="text" placeholder="Cari pesanan, produk..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-11 pr-4 py-2.5 bg-white/10 text-white placeholder-emerald-200 rounded-xl focus:bg-white focus:text-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all"/>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => setActiveTab('landing')} className="text-emerald-700 hover:bg-emerald-50 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-emerald-50/50 rounded-lg border border-emerald-100" title="Lihat Homepage Publik">
+                                <button onClick={() => setAppMode('landing')} className="text-emerald-100 hover:bg-emerald-700 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-emerald-700/50 rounded-lg border border-emerald-600" title="Lihat Homepage Publik">
                                     <Icon name="Home" size={18} /> <span className="hidden sm:inline">Homepage</span>
                                 </button>
-                                <button onClick={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); setActiveTab('landing'); }} className="text-gray-500 hover:text-red-500 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-gray-50 hover:bg-red-50 rounded-lg">
+                                <button onClick={() => { setAppMode('landing'); setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); setActiveTab('dashboard'); }} className="text-emerald-100 hover:bg-red-600 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-white/10 rounded-lg" title="Keluar">
                                     <Icon name="LogOut" size={18} /> <span className="hidden sm:inline">Keluar</span>
                                 </button>
                             </div>
@@ -1305,8 +1356,6 @@
                     </header>
 
                     <main className="flex-1 max-w-[1920px] mx-auto w-full p-4 md:p-6 print:p-0">
-                        <main className="flex-1 max-w-[1920px] mx-auto w-full p-4 md:p-6 print:p-0">
-                        {activeTab === 'landing' && <LandingView products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} settings={settings} formatRupiah={formatRupiah} onGoToLogin={() => {}} showAlert={showAlert} />}
                         {activeTab === 'dashboard' && <DashboardView transactions={transactions} formatRupiah={formatRupiah} settings={settings} onSaveSettings={updateSettingsDb} requestAuth={requestAuth} />}
                         {activeTab === 'produk' && <ProdukView products={products} onSaveProduct={saveProductDb} onDeleteProduct={deleteProductDb} formatRupiah={formatRupiah} searchQuery={searchQuery} compressImage={compressImage} settings={settings} onSaveSettings={updateSettingsDb} showAlert={showAlert} />}
                         {activeTab === 'kasir' && <KasirView products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} formatRupiah={formatRupiah} parseThousand={parseThousand} formatThousand={formatThousand} searchQuery={searchQuery} settings={settings} editingTrx={editingTrx} clearEditingTrx={() => setEditingTrx(null)} showAlert={showAlert} />}
