@@ -214,8 +214,6 @@
             const [pickupTime, setPickupTime] = useState('10:00');
             const [selectedService, setSelectedService] = useState('');
             const [isSubmitting, setIsSubmitting] = useState(false);
-
-            // Tampilkan antrean yang belum selesai dari semua tanggal atau hari ini ke depan agar jadwal terlihat jelas
             const activeQueue = transactions
                 .filter(t => t.progressStatus !== 'Selesai')
                 .sort((a, b) => new Date(a.pickupDate || 0) - new Date(b.pickupDate || 0));
@@ -1248,7 +1246,7 @@
                                 <img src={KASSQU_LOGO} alt="KassQu Logo" className="w-full h-full object-contain" onError={(e) => { e.target.onerror = null; e.target.parentElement.innerHTML = '<span class="text-5xl font-black text-emerald-600 tracking-tighter italic">KQ</span>'; }} />
                             </div>
                             <h1 className="text-4xl md:text-5xl font-black tracking-tight drop-shadow-lg text-white mb-1">KassQu</h1>
-                            <p className="text-xs font-bold tracking-[0.3em] uppercase text-emerald-400 mb-10">POS System</p>
+                            <p className="text-xs font-bold tracking-[0.3em] uppercase text-emerald-400 mb-10">POS System </p>
                             <div className="w-10 h-10 rounded-full animate-spin border-[4px] border-white/20 border-t-emerald-500"></div>
                         </div>
                     </div>
@@ -1285,7 +1283,7 @@
 
             return (
                 <div className="min-h-[100dvh] bg-gray-50 flex flex-col font-sans pb-[calc(82px+env(safe-area-inset-bottom))] print:pb-0 print:bg-white">
-                    <header className="bg-emerald-50 shadow-sm sticky top-0 z-20 print:hidden" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
+                    <header className="bg-emerald-800 shadow-sm sticky top-0 z-20 print:hidden" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
                         <div className="max-w-[1920px] mx-auto px-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 {settings?.logo ? <img src={settings.logo} alt="Logo" className="w-10 h-10 object-cover rounded-full border border-gray-250" /> : <div className="w-10 h-10 bg-emerald-700 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
