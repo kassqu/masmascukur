@@ -1285,19 +1285,24 @@
 
             return (
                 <div className="min-h-[100dvh] bg-gray-50 flex flex-col font-sans pb-[calc(82px+env(safe-area-inset-bottom))] print:pb-0 print:bg-white">
-                    <header className="bg-white shadow-sm sticky top-0 z-20 print:hidden" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
+                    <header className="bg-emerald-50 shadow-sm sticky top-0 z-20 print:hidden" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
                         <div className="max-w-[1920px] mx-auto px-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                {settings?.logo ? <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200 overflow-hidden p-0.5"><img src={settings.logo} alt="Logo" className="w-full h-full object-contain" /></div> : <div className="w-10 h-10 bg-emerald-800 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
+                                {settings?.logo ? <img src={settings.logo} alt="Logo" className="w-10 h-10 object-cover rounded-full border border-gray-250" /> : <div className="w-10 h-10 bg-emerald-700 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
                                 <div><h1 className="font-bold text-gray-800 text-sm sm:text-lg leading-tight uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1><p className="text-[10px] text-gray-500 font-medium flex items-center gap-1"><Icon name="UserCircle" size={12}/> {currentUser?.namaKasir || 'Staff'}</p></div>
                             </div>
                             <div className="hidden sm:flex flex-1 max-w-lg mx-8 relative">
                                 <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input type="text" placeholder="Cari pesanan, produk..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-11 pr-4 py-2.5 bg-gray-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all"/>
                             </div>
-                            <button onClick={() => { setAppMode('landing'); setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); setActiveTab('dashboard'); }} className="text-gray-500 hover:text-red-500 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-gray-50 hover:bg-red-50 rounded-lg">
-                                <Icon name="LogOut" size={18} /> <span className="hidden sm:inline">Keluar</span>
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setActiveTab('landing')} className="text-emerald-700 hover:bg-emerald-50 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-emerald-50/50 rounded-lg border border-emerald-100" title="Lihat Homepage Publik">
+                                    <Icon name="Home" size={18} /> <span className="hidden sm:inline">Homepage</span>
+                                </button>
+                                <button onClick={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); setActiveTab('landing'); }} className="text-gray-500 hover:text-red-500 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-gray-50 hover:bg-red-50 rounded-lg">
+                                    <Icon name="LogOut" size={18} /> <span className="hidden sm:inline">Keluar</span>
+                                </button>
+                            </div>
                         </div>
                     </header>
 
