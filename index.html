@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Mas-Mas Cukur</title>
+    <title>Mas-Mas Cukur POS</title>
     
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3055/3055963.png" />
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/kassqu/masmascukur/main/logo.png" />
+    <link rel="manifest" href="https://raw.githubusercontent.com/kassqu/masmascukur/main/manifest.json">
     <meta name="theme-color" content="#047857" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,23 +14,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
 
     <style>
-        input[type="date"] {
+        input[type="date"], input[type="time"] {
             color: #1f2937 !important;
             -webkit-text-fill-color: #1f2937 !important;
             color-scheme: light !important;
         }
-        input[type="date"]::-webkit-datetime-edit,
-        input[type="date"]::-webkit-datetime-edit-text, 
-        input[type="date"]::-webkit-datetime-edit-month-field, 
-        input[type="date"]::-webkit-datetime-edit-day-field, 
+        input[type="date"]::-webkit-datetime-edit, input[type="time"]::-webkit-datetime-edit,
+        input[type="date"]::-webkit-datetime-edit-text, input[type="time"]::-webkit-datetime-edit-text,
+        input[type="date"]::-webkit-datetime-edit-month-field, input[type="date"]::-webkit-datetime-edit-day-field, 
         input[type="date"]::-webkit-datetime-edit-year-field {
             color: #1f2937 !important;
             -webkit-text-fill-color: #1f2937 !important;
         }
-        /* Custom scrollbar for wide screens */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -42,9 +41,10 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const SPLASH_BG_IMAGE = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop"; 
+        const KASSQU_LOGO = "https://raw.githubusercontent.com/kassqu/masmascukur/main/logo.png";
         const LOGIN_BG_IMAGE = "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop"; 
 
+        // Ganti dengan URL deployment Google Apps Script lu yang aktif
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxDC_IM-S928LESR3Uj_bSizoC4-AVuCYuRIvzOm_2C2j0klnhFnMJZJpyRf66x2J1I/exec"; 
 
         const formatThousand = (val) => {
@@ -57,6 +57,8 @@
             if (!val) return 0;
             return Number(val.toString().replace(/[^0-9]/g, ''));
         };
+
+        const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
         const icons = {
             Home: <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>,
@@ -95,9 +97,10 @@
 
         const INITIAL_SETTINGS = {
             storeName: 'Mas-Mas Cukur',
-            address: 'Jl. Banjarsari, Gang Iwenisari No. 12, Tembalang, Semarang',
+            address: 'Jl. Merdeka No. 123',
             phone: '0812-3456-7890',
-            logo: null,
+            adminPhone: '081234567890',
+            logo: KASSQU_LOGO,
             receiptFooter: '*** TERIMA KASIH ***\nStay Handsome!',
             modalLaci: 0,
             categories: ['Potong Rambut', 'Shaving', 'Treatment', 'Produk']
@@ -132,6 +135,21 @@
             });
         };
 
+        const callGasApi = async (payload) => {
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                return await response.json();
+            } catch (err) {
+                console.warn('Gagal koneksi ke server, menggunakan mode offline:', err);
+                return { status: 'offline' };
+            }
+        };
+
         function AdminAuthModal({ onClose, onConfirm, showAlert }) {
             const [pin, setPin] = useState('');
             const [loading, setLoading] = useState(false);
@@ -140,12 +158,7 @@
                 e.preventDefault();
                 setLoading(true);
                 try {
-                    const response = await fetch(GAS_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'VERIFY_ADMIN_PIN', pin: pin })
-                    });
-                    const result = await response.json();
-                    
+                    const result = await callGasApi({ action: 'VERIFY_ADMIN_PIN', pin: pin });
                     if (result.status === 'success' && result.valid) { 
                         onConfirm();
                     } else {
@@ -153,7 +166,7 @@
                         setPin('');
                     }
                 } catch (error) {
-                    showAlert('Koneksi gagal. Periksa jaringan atau URL script.', 'error');
+                    showAlert('Gagal verifikasi ke server.', 'error');
                 } finally {
                     setLoading(false);
                 }
@@ -194,210 +207,186 @@
             );
         }
 
-        function App() {
-            const [showSplash, setShowSplash] = useState(true);
-            const [isDbLoading, setIsDbLoading] = useState(false);
-            
-            const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('kassqu_user') !== null);
-            const [currentUser, setCurrentUser] = useState(() => {
-                const saved = localStorage.getItem('kassqu_user');
-                return saved ? JSON.parse(saved) : null;
-            });
-            const [activeTab, setActiveTab] = useState(() => localStorage.getItem('kassqu_tab') || 'dashboard');
-            
-            const [searchQuery, setSearchQuery] = useState('');
-            
-            const [settings, setSettings] = useState(() => {
-                const saved = localStorage.getItem('kassqu_settings');
-                return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
-            });
+        function LandingView({ settings, products, transactions, onSaveTransaction, onGoToLogin, formatRupiah, showAlert }) {
+            const [customerName, setCustomerName] = useState('');
+            const [customerPhone, setCustomerPhone] = useState('');
+            const [pickupDate, setPickupDate] = useState(new Date().toISOString().split('T')[0]);
+            const [pickupTime, setPickupTime] = useState('10:00');
+            const [selectedService, setSelectedService] = useState('');
+            const [isSubmitting, setIsSubmitting] = useState(false);
 
-            const [products, setProducts] = useState(INITIAL_PRODUCTS);
-            const [transactions, setTransactions] = useState([]);
+            // Tampilkan antrean yang belum selesai dari semua tanggal atau hari ini ke depan agar jadwal terlihat jelas
+            const activeQueue = transactions
+                .filter(t => t.progressStatus !== 'Selesai')
+                .sort((a, b) => new Date(a.pickupDate || 0) - new Date(b.pickupDate || 0));
 
-            const [loginError, setLoginError] = useState('');
-            const [editingTrx, setEditingTrx] = useState(null);
-
-            const [showAuthModal, setShowAuthModal] = useState(false);
-            const [pendingAuthAction, setPendingAuthAction] = useState(null);
-
-            const isAppLocked = showSplash || !isLoggedIn;
-
-            const [appAlert, setAppAlert] = useState(null); 
-            const showAlert = (message, type = 'error') => {
-                setAppAlert({ message, type });
-            };
-
-            useEffect(() => {
-                localStorage.setItem('kassqu_tab', activeTab);
-            }, [activeTab]);
-
-            // Durasi Splash Screen
-            useEffect(() => {
-                let isMounted = true;
-                setTimeout(() => {
-                    if (isMounted) setShowSplash(false);
-                }, 1500);
-                return () => { isMounted = false; };
-            }, []);
-
-            const handleLogin = async (e) => {
+            const handleBooking = async (e) => {
                 e.preventDefault();
-                setIsDbLoading(true);
-                setLoginError('');
+                if(!selectedService) { showAlert('Pilih layanan terlebih dahulu!', 'error'); return; }
                 
-                try {
-                    const formData = new FormData(e.target);
-                    const user = formData.get('username');
-                    const pass = formData.get('password');
-
-                    const response = await fetch(GAS_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'VERIFY_LOGIN', username: user, password: pass })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.status === 'success') {
-                        setCurrentUser(result.user);
-                        localStorage.setItem('kassqu_user', JSON.stringify(result.user));
-                        setIsLoggedIn(true); 
-                    } else {
-                        setLoginError(result.message || 'Username/Password salah!');
-                    }
-                } catch (error) {
-                    setLoginError('Koneksi bermasalah. Pastikan URL Script benar.');
-                } finally {
-                    setIsDbLoading(false);
-                }
+                setIsSubmitting(true);
+                const service = products.find(p => p.id == selectedService);
+                const todayStr = new Date().toISOString().split('T')[0];
+                const todayTrx = transactions.filter(t => t.date && t.date.startsWith(todayStr));
+                const queueNumber = todayTrx.length + 1;
+                
+                const finalPrice = (service.price || 0) - (service.discount || 0);
+                const fullPickupDateTime = `${pickupDate}T${pickupTime}:00`;
+                const newTrx = {
+                    id: `BKG-${Date.now().toString().slice(-6)}`,
+                    customer: customerName,
+                    customerPhone: customerPhone,
+                    items: [{ ...service, qty: 1 }],
+                    total: finalPrice > 0 ? finalPrice : service.price,
+                    discount: service.discount || 0,
+                    status: 'Belum Lunas',
+                    date: new Date().toISOString(),
+                    pickupDate: fullPickupDateTime,
+                    queueNumber: queueNumber,
+                    progressStatus: 'Menunggu Antrean',
+                    paymentMethod: '-', amountReceived: 0, change: 0
+                };
+                
+                await onSaveTransaction(newTrx);
+                setIsSubmitting(false);
+                showAlert(`Booking Berhasil! Nomor Antrean Anda: ${queueNumber}`, 'success');
+                
+                // Kirim Notifikasi WA Otomatis ke Admin
+                const adminNumber = settings?.adminPhone || settings?.phone || '6281234567890';
+                const cleanAdminPhone = adminNumber.startsWith('0') ? '62' + adminNumber.slice(1) : adminNumber.replace(/[^0-9]/g, '');
+                const waText = `*[BOOKING BARU - ${settings?.storeName || 'Barbershop'}]*\n\n` +
+                               `No. Antrean: *#${queueNumber}*\n` +
+                               `Nama Pelanggan: *${customerName}*\n` +
+                               `No. HP: *${customerPhone}*\n` +
+                               `Layanan: *${service.name}*\n` +
+                               `Jadwal: *${pickupDate} Jam ${pickupTime}*\n` +
+                               `Estimasi Durasi: *30 - 45 Menit*\n\n` +
+                               `Mohon disiapkan, terima kasih!`;
+                
+                window.open(`https://wa.me/${cleanAdminPhone}?text=${encodeURIComponent(waText)}`, '_blank');
+                
+                setCustomerName(''); setCustomerPhone(''); setSelectedService('');
             };
-
-            const requestAuth = (actionCallback) => {
-                const currentKode = String(currentUser?.kodeKasir || '').toLowerCase();
-                if (currentKode === 'admin' || currentKode.includes('admin')) {
-                    actionCallback();
-                } else {
-                    setPendingAuthAction(() => actionCallback);
-                    setShowAuthModal(true);
-                }
-            };
-
-            const updateSettingsDb = async (newData) => { 
-                setSettings(newData);
-                localStorage.setItem('kassqu_settings', JSON.stringify(newData)); // Simpan ke localstorage
-            };
-            const saveProductDb = async (prod) => {
-                const newProds = products.find(p => p.id === prod.id) ? products.map(p => p.id === prod.id ? prod : p) : [...products, prod];
-                setProducts(newProds); 
-            };
-            const deleteProductDb = async (id) => { setProducts(products.filter(p => p.id !== id)); };
-            const saveTransactionDb = async (trx) => {
-                const newTrxs = transactions.find(t => t.id === trx.id) ? transactions.map(t => t.id === trx.id ? trx : t) : [...transactions, trx];
-                setTransactions(newTrxs); 
-            };
-            const deleteTransactionDb = async (id) => { setTransactions(transactions.filter(t => t.id !== id)); };
-
-            const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
-
-            if (showSplash) {
-                return (
-                    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white bg-gray-900 touch-none overscroll-none" style={{ backgroundImage: `url('${SPLASH_BG_IMAGE}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                        <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-[6px]"></div>
-                        <div className="relative z-10 flex flex-col items-center animate-in fade-in duration-700">
-                            <div className="w-16 h-16 rounded-full animate-spin border-[4px] border-white border-t-[#10b981] border-l-[#10b981] mb-8 drop-shadow-md"></div>
-                            <div className="flex flex-col items-center gap-2 animate-fade-in">
-                                {settings?.logo ? (
-                                    <img src={settings.logo} alt="Logo" className="w-24 h-24 object-contain bg-white rounded-full mb-4 shadow-xl border-4 border-white/30 p-1.5" />
-                                ) : (
-                                    <Icon name="Scissors" size={48} className="text-white drop-shadow-md mb-2"/>
-                                )}
-                                <h1 className="text-3xl md:text-4xl font-black tracking-widest drop-shadow-md uppercase text-center px-4">{settings?.storeName || 'MAS-MAS CUKUR'}</h1>
-                            </div>
-                            <p className="text-sm opacity-80 mt-4 tracking-widest uppercase">POS System</p>
-                        </div>
-                    </div>
-                );
-            }
-
-            if (!isLoggedIn) {
-                return (
-                    <div className="fixed inset-0 z-50 flex flex-col justify-center items-center p-4 font-sans bg-gray-900 overflow-y-auto overscroll-none" style={{ backgroundImage: `url('${LOGIN_BG_IMAGE}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 to-gray-900/80 backdrop-blur-[4px]"></div>
-                        <div className="relative z-10 bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-md border border-white/20">
-                            <div className="text-center mb-6 flex flex-col items-center">
-                                {settings?.logo ? (
-                                    <img src={settings.logo} alt="Logo Toko" className="w-24 h-24 object-contain bg-white rounded-full mb-4 shadow-xl border-4 border-white/30 p-1.5" />
-                                ) : (
-                                    <div className="w-24 h-24 bg-gradient-to-br from-emerald-700 to-gray-800 text-white rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-white/30">
-                                        <Icon name="Scissors" size={32} />
-                                    </div>
-                                )}
-                                <h1 className="text-2xl font-black text-white tracking-wide uppercase drop-shadow-md leading-tight">{settings?.storeName || 'SISTEM KASIR'}</h1>
-                                <p className="text-gray-300 text-sm mt-2 font-medium">Masuk ke Sistem Barbershop</p>
-                            </div>
-                            {loginError && <div className="mb-4 p-3 bg-red-100/90 text-red-700 rounded-lg text-sm font-bold flex justify-center text-center gap-2 border border-red-200"><Icon name="XCircle" size={16} className="shrink-0 mt-0.5" /> <span>{loginError}</span></div>}
-                            <form onSubmit={handleLogin} className="space-y-4">
-                                <input type="text" name="username" placeholder="Username" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
-                                <input type="password" name="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
-                                <button type="submit" disabled={isDbLoading} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-lg border border-emerald-500/50 hover:shadow-emerald-500/50 transition-all">{isDbLoading ? 'Memproses...' : 'Login Kasir'}</button>
-                            </form>
-                        </div>
-                    </div>
-                );
-            }
 
             return (
-                <div className="min-h-[100dvh] bg-gray-50 flex flex-col font-sans pb-[calc(82px+env(safe-area-inset-bottom))] print:pb-0 print:bg-white">
-                    <header className="bg-white shadow-sm sticky top-0 z-20 print:hidden" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
-                        <div className="max-w-[1920px] mx-auto px-4 flex items-center justify-between">
+                <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+                    <header className="bg-white shadow-sm sticky top-0 z-20" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
+                        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                {settings?.logo ? <img src={settings.logo} alt="Logo" className="w-10 h-10 object-contain bg-white rounded-full border border-gray-200 p-0.5" /> : <div className="w-10 h-10 bg-emerald-800 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
-                                <div><h1 className="font-bold text-gray-800 text-sm sm:text-lg leading-tight uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1><p className="text-[10px] text-gray-500 font-medium flex items-center gap-1"><Icon name="UserCircle" size={12}/> {currentUser?.namaKasir || 'Staff'}</p></div>
+                                {settings?.logo ? <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200 overflow-hidden"><img src={settings.logo} alt="Logo" className="w-full h-full object-contain p-0.5" /></div> : <div className="w-10 h-10 bg-emerald-800 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
+                                <h1 className="font-black text-gray-800 text-lg uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1>
                             </div>
-                            <div className="hidden sm:flex flex-1 max-w-lg mx-8 relative">
-                                <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                <input type="text" placeholder="Cari pesanan, produk..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-11 pr-4 py-2.5 bg-gray-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all"/>
-                            </div>
-                            <button onClick={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); setActiveTab('dashboard'); }} className="text-gray-500 hover:text-red-500 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-gray-50 hover:bg-red-50 rounded-lg">
-                                <Icon name="LogOut" size={18} /> <span className="hidden sm:inline">Keluar</span>
+                            <button onClick={onGoToLogin} className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-md">
+                                <Icon name="Lock" size={14}/> Login Kasir
                             </button>
                         </div>
                     </header>
 
-                    <main className="flex-1 max-w-[1920px] mx-auto w-full p-4 md:p-6 print:p-0">
-                        {activeTab === 'dashboard' && <DashboardView transactions={transactions} formatRupiah={formatRupiah} settings={settings} onSaveSettings={updateSettingsDb} requestAuth={requestAuth} />}
-                        {activeTab === 'produk' && <ProdukView products={products} onSaveProduct={saveProductDb} onDeleteProduct={deleteProductDb} formatRupiah={formatRupiah} searchQuery={searchQuery} compressImage={compressImage} settings={settings} onSaveSettings={updateSettingsDb} showAlert={showAlert} formatThousand={formatThousand} parseThousand={parseThousand} />}
-                        {activeTab === 'kasir' && <KasirView products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} formatRupiah={formatRupiah} parseThousand={parseThousand} formatThousand={formatThousand} searchQuery={searchQuery} settings={settings} editingTrx={editingTrx} clearEditingTrx={() => setEditingTrx(null)} showAlert={showAlert} />}
-                        {activeTab === 'laporan' && <LaporanView transactions={transactions} onDeleteTransaction={deleteTransactionDb} onUpdateTransaction={saveTransactionDb} formatRupiah={formatRupiah} searchQuery={searchQuery} onLoadToKasir={(trx)=>{setEditingTrx(trx); setActiveTab('kasir');}} settings={settings} showAlert={showAlert} />}
-                        {activeTab === 'setup' && <SetupView settings={settings} onSaveSettings={updateSettingsDb} compressImage={compressImage} />}
-                    </main>
-
-                    <nav className="fixed bottom-[calc(6px+env(safe-area-inset-bottom,0px))] left-4 right-4 max-w-xl mx-auto bg-white border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex justify-around items-center h-16 z-30 px-2 sm:px-6 rounded-2xl print:hidden animate-in slide-in-from-bottom-5">
-                        <NavItem icon={<Icon name="Home" size={24} />} label="Dashboard" isActive={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-                        <NavItem icon={<Icon name="Package" size={24} />} label="Layanan" isActive={activeTab === 'produk'} onClick={() => requestAuth(() => setActiveTab('produk'))} />
-                        <div className="-mt-6 relative flex flex-col items-center">
-                            <button onClick={() => setActiveTab('kasir')} className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg text-white transition-transform hover:scale-105 active:scale-95 ${activeTab === 'kasir' ? 'bg-emerald-800 ring-4 ring-emerald-100' : 'bg-emerald-600'}`}><Icon name="ShoppingCart" size={26} /></button>
-                            <span className={`text-[10px] font-bold mt-1 ${activeTab === 'kasir' ? 'text-emerald-800' : 'text-gray-500'}`}>KASIR</span>
-                        </div>
-                        <NavItem icon={<Icon name="FileText" size={24} />} label="Laporan" isActive={activeTab === 'laporan'} onClick={() => setActiveTab('laporan')} />
-                        <NavItem icon={<Icon name="Settings" size={24} />} label="Setup" isActive={activeTab === 'setup'} onClick={() => requestAuth(() => setActiveTab('setup'))} />
-                    </nav>
-
-                    {appAlert && (
-                        <div className="fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200">
-                            <div className="bg-white rounded-3xl p-6 max-w-xs w-full shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-gray-100">
-                                <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${appAlert.type === 'error' ? 'bg-red-50 text-red-500' : appAlert.type === 'info' ? 'bg-emerald-50 text-emerald-500' : 'bg-green-50 text-green-500'}`}>
-                                    <Icon name={appAlert.type === 'error' ? 'XCircle' : 'CheckCircle2'} size={32} />
-                                </div>
-                                <h3 className="font-bold text-gray-800 text-lg mb-2">Info</h3>
-                                <p className="text-xs text-gray-500 mb-6 leading-relaxed">{appAlert.message}</p>
-                                <button onClick={() => setAppAlert(null)} className={`w-full text-white font-bold py-3 rounded-2xl shadow-lg active:scale-95 transition-all text-sm ${appAlert.type === 'error' ? 'bg-red-600 hover:bg-red-700 shadow-red-100' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100'}`}>Mengerti</button>
+                    <main className="flex-1 max-w-5xl mx-auto w-full p-4 md:p-6 space-y-8">
+                        <div className="bg-emerald-800 rounded-3xl p-8 text-center text-white shadow-xl relative overflow-hidden">
+                            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop')`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+                            <div className="relative z-10 flex flex-col items-center">
+                                <Icon name="Scissors" size={48} className="mb-4 drop-shadow-md text-emerald-200"/>
+                                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-widest drop-shadow-lg mb-4">Ganteng Maksimal!</h2>
+                                <p className="text-emerald-50 text-sm md:text-base max-w-md mx-auto mb-6">Booking jadwal cukur kamu sekarang. Cek jadwal di bawah agar tidak tabrakan (Durasi per sesi ± 30-45 menit).</p>
+                                <a href="#booking" className="bg-white text-emerald-900 px-8 py-3.5 rounded-2xl font-black uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all">Booking Sekarang</a>
                             </div>
                         </div>
-                    )}
-                    {showAuthModal && (
-                        <AdminAuthModal showAlert={showAlert} onClose={() => { setShowAuthModal(false); setPendingAuthAction(null); }} onConfirm={() => { setShowAuthModal(false); if (pendingAuthAction) pendingAuthAction(); setPendingAuthAction(null); }} />
-                    )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div id="booking" className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-8">
+                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-2 mb-6"><Icon name="CalendarDays" size={24} className="text-emerald-600"/> Form Booking</h3>
+                                <form onSubmit={handleBooking} className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nama Lengkap</label>
+                                        <input type="text" required value={customerName} onChange={e=>setCustomerName(e.target.value)} placeholder="Contoh: Budi Santoso" className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">No. WhatsApp</label>
+                                        <input type="tel" required value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)} placeholder="Contoh: 08123456789" className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Tanggal</label>
+                                            <input type="date" required value={pickupDate} onChange={e=>setPickupDate(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Jam</label>
+                                            <input type="time" required value={pickupTime} onChange={e=>setPickupTime(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Pilih Layanan</label>
+                                        <select required value={selectedService} onChange={e=>setSelectedService(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors">
+                                            <option value="" disabled>-- Pilih Layanan Utama --</option>
+                                            {products.map(p => {
+                                                const effectivePrice = (p.price || 0) - (p.discount || 0);
+                                                return (
+                                                    <option key={p.id} value={p.id}>{p.name} - {formatRupiah(effectivePrice > 0 ? effectivePrice : p.price)}</option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                    <div className="pt-2">
+                                        <button type="submit" disabled={isSubmitting} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest py-4 rounded-xl shadow-lg shadow-emerald-900/20 active:scale-95 transition-all disabled:opacity-70">
+                                            {isSubmitting ? 'Memproses...' : 'Kirim Booking'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="bg-slate-800 rounded-3xl p-6 text-white shadow-lg">
+                                    <h3 className="text-sm font-black uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2"><Icon name="Tag" size={18}/> Layanan Kami</h3>
+                                    <div className="space-y-3">
+                                        {products.slice(0,4).map(p => {
+                                            const effectivePrice = (p.price || 0) - (p.discount || 0);
+                                            return (
+                                                <div key={p.id} className="flex justify-between items-center border-b border-slate-700 pb-2">
+                                                    <span className="font-bold text-sm">{p.name}</span>
+                                                    <span className="font-black text-emerald-300 text-sm">{formatRupiah(effectivePrice > 0 ? effectivePrice : p.price)}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+                                    <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-2 flex items-center gap-2"><Icon name="Clock" size={18} className="text-orange-500"/> Jadwal & Antrean Aktif</h3>
+                                    <p className="text-[11px] text-slate-500 mb-4 font-medium">Periksa tanggal & jam di bawah agar tidak berbenturan dengan pelanggan lain (±35 mnt/sesi).</p>
+                                    {activeQueue.length === 0 ? (
+                                        <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase tracking-wider">Belum ada antrean / jadwal booking.</div>
+                                    ) : (
+                                        <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1 custom-scroll">
+                                            {activeQueue.map(q => {
+                                                const dt = q.pickupDate ? new Date(q.pickupDate) : null;
+                                                const dateStr = dt && !isNaN(dt) ? dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+                                                const timeStr = dt && !isNaN(dt) ? dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : (q.pickupDate ? q.pickupDate.slice(11, 16) : '-');
+                                                
+                                                return (
+                                                    <div key={q.id} className="flex items-center gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 shadow-sm">
+                                                        <div className="w-10 h-10 bg-emerald-50 border border-emerald-100 rounded-full flex items-center justify-center font-black text-emerald-700 shrink-0 text-sm">#{q.queueNumber || '-'}</div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center justify-between">
+                                                                <p className="font-bold text-sm text-slate-800 truncate">{q.customer}</p>
+                                                                <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full shrink-0 ml-1">📅 {dateStr} ⏰ {timeStr}</span>
+                                                            </div>
+                                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">{q.items[0]?.name || 'Layanan'}</p>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                    
+                    <footer className="bg-slate-900 text-slate-400 py-8 text-center text-xs font-bold uppercase tracking-wider mt-auto">
+                        <p>© {new Date().getFullYear()} {settings?.storeName || 'Mas-Mas Cukur'}. All Rights Reserved.</p>
+                        <p className="mt-1 opacity-60">{settings?.address || ''}</p>
+                    </footer>
                 </div>
             );
         }
@@ -483,7 +472,7 @@
                                         </div>
                                         <div className="text-right">
                                             <p className="font-black text-sm text-gray-800 mb-1">{formatRupiah(t.total || 0)}</p>
-                                            <p className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${t.progressStatus === 'Selesai' ? 'bg-emerald-50 text-emerald-600' : 'bg-teal-50 text-teal-600'}`}>{t.progressStatus || 'Baru Masuk'}</p>
+                                            <p className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${t.progressStatus === 'Selesai' ? 'bg-emerald-50 text-emerald-600' : 'bg-emerald-50 text-emerald-600'}`}>{t.progressStatus || 'Baru Masuk'}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -494,7 +483,7 @@
             );
         }
 
-        function ProdukView({ products, onSaveProduct, onDeleteProduct, formatRupiah, searchQuery, compressImage, settings, onSaveSettings, showAlert, formatThousand, parseThousand }) {
+        function ProdukView({ products, onSaveProduct, onDeleteProduct, formatRupiah, searchQuery, compressImage, settings, onSaveSettings, showAlert }) {
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false); 
             const [editingProduct, setEditingProduct] = useState(null);
@@ -544,24 +533,27 @@
                         </div>
                         
                         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-                            {filteredProducts.map(p => (
-                                <div key={p.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg flex flex-col transition-all">
-                                    <div className="h-32 bg-slate-100 relative">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><Icon name="Scissors" size={36} /></div>}<span className="absolute top-2 right-2 bg-slate-800 text-white px-2 py-1 text-[10px] font-bold rounded-lg shadow-md tracking-wider uppercase">{p.category}</span></div>
-                                    <div className="p-4 flex-1 flex flex-col justify-between">
-                                        <div>
-                                            <h3 className="font-bold text-gray-800 text-sm mb-1.5 leading-tight line-clamp-2">{p.name}</h3>
-                                            <p className="text-emerald-700 font-black text-sm">
-                                                {p.discount > 0 ? <><span className="line-through text-slate-400 text-xs mr-1">{formatRupiah(p.price)}</span>{formatRupiah(p.price - p.discount)}</> : formatRupiah(p.price)}
-                                                <span className="text-gray-400 text-[10px] font-semibold uppercase ml-1">/ {p.unit}</span>
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
-                                            <button onClick={() => openModal(p)} className="flex-1 bg-slate-50 hover:bg-slate-200 text-slate-700 py-2 rounded-xl flex items-center justify-center gap-1 text-[10px] font-bold uppercase transition-colors"><Icon name="Edit" size={14} /> Edit</button>
-                                            <button onClick={() => onDeleteProduct(p.id)} className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-xl flex items-center justify-center transition-colors"><Icon name="Trash2" size={14} /></button>
+                            {filteredProducts.map(p => {
+                                const effectivePrice = (p.price || 0) - (p.discount || 0);
+                                return (
+                                    <div key={p.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg flex flex-col transition-all">
+                                        <div className="h-32 bg-slate-100 relative">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><Icon name="Scissors" size={36} /></div>}<span className="absolute top-2 right-2 bg-slate-800 text-white px-2 py-1 text-[10px] font-bold rounded-lg shadow-md tracking-wider uppercase">{p.category}</span></div>
+                                        <div className="p-4 flex-1 flex flex-col justify-between">
+                                            <div>
+                                                <h3 className="font-bold text-gray-800 text-sm mb-1.5 leading-tight line-clamp-2">{p.name}</h3>
+                                                <p className="text-emerald-700 font-black text-sm">
+                                                    {p.discount > 0 ? <><span className="line-through text-slate-400 text-xs mr-1">{formatRupiah(p.price)}</span>{formatRupiah(effectivePrice > 0 ? effectivePrice : p.price)}</> : formatRupiah(p.price)}
+                                                    <span className="text-gray-400 text-[10px] font-semibold uppercase ml-1">/ {p.unit}</span>
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+                                                <button onClick={() => openModal(p)} className="flex-1 bg-slate-50 hover:bg-slate-200 text-slate-700 py-2 rounded-xl flex items-center justify-center gap-1 text-[10px] font-bold uppercase transition-colors"><Icon name="Edit" size={14} /> Edit</button>
+                                                <button onClick={() => onDeleteProduct(p.id)} className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-xl flex items-center justify-center transition-colors"><Icon name="Trash2" size={14} /></button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -706,7 +698,7 @@
 
             useEffect(() => { 
                 if (editingTrx) { 
-                    setCart(editingTrx.items || []); setCustomerName(editingTrx.customer || ''); setCustomerPhone(editingTrx.customerPhone || ''); setPickupDate(editingTrx.pickupDate || new Date().toISOString().split('T')[0]); setTrxId(editingTrx.id);
+                    setCart(editingTrx.items || []); setCustomerName(editingTrx.customer || ''); setCustomerPhone(editingTrx.customerPhone || ''); setPickupDate(editingTrx.pickupDate ? editingTrx.pickupDate.slice(0, 10) : new Date().toISOString().split('T')[0]); setTrxId(editingTrx.id);
                 } 
             }, [editingTrx]);
 
@@ -717,9 +709,18 @@
             const handleQtyChange = (id, val) => setCart(cart.map(i => i.id === id ? { ...i, qty: val } : i));
             const removeCartItem = (id) => setCart(cart.filter(i => i.id !== id));
             
-            const subTotal = cart.reduce((sum, item) => sum + (item.price * (parseFloat(item.qty) || 0)), 0);
-            const discountVal = cart.reduce((sum, item) => sum + ((item.discount || 0) * (parseFloat(item.qty) || 0)), 0);
-            const totalCart = Math.max(0, subTotal - discountVal);
+            const subTotal = cart.reduce((sum, item) => {
+                const effectivePrice = (item.price || 0) - (item.discount || 0);
+                const unitPrice = effectivePrice > 0 ? effectivePrice : item.price;
+                return sum + (unitPrice * (parseFloat(item.qty) || 0));
+            }, 0);
+            
+            const totalDiscount = cart.reduce((sum, item) => {
+                const itemDisc = (item.discount || 0) * (parseFloat(item.qty) || 0);
+                return sum + itemDisc;
+            }, 0);
+
+            const totalCart = Math.max(0, subTotal);
             const totalItemQty = cart.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
 
             const handleProcessPayment = (method, amountReceived, change) => {
@@ -734,7 +735,7 @@
                     customerPhone: customerPhone, 
                     items: cleanCart, 
                     total: totalCart,
-                    discount: discountVal, 
+                    discount: totalDiscount, 
                     status: 'Lunas', 
                     date: trxId && editingTrx ? editingTrx.date : new Date().toISOString(), 
                     pickupDate: pickupDate,
@@ -760,7 +761,7 @@
                     customerPhone: customerPhone, 
                     items: cleanCart, 
                     total: totalCart,
-                    discount: discountVal, 
+                    discount: totalDiscount, 
                     status: 'Belum Lunas', 
                     date: trxId && editingTrx ? editingTrx.date : new Date().toISOString(), 
                     pickupDate: pickupDate,
@@ -774,20 +775,22 @@
             return (
                 <>
                     <div className="flex flex-row gap-4 lg:gap-6 animate-in fade-in h-[calc(100vh-160px)] lg:h-[calc(100vh-140px)] relative overflow-hidden">
-                        
                         <div className="flex-1 overflow-y-auto pr-2 pb-36 md:pb-4 custom-scroll">
                             <h2 className="text-xl font-black text-slate-800 mb-4 uppercase tracking-tight">Pilih Layanan</h2>
                             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 lg:gap-4">
-                                {filteredProducts.map(p => (
-                                    <button key={p.id} onClick={() => addToCart(p)} className="bg-white rounded-2xl border border-slate-200 p-3 lg:p-4 flex flex-col items-center text-center hover:border-emerald-600 hover:shadow-lg transition-all group">
-                                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3 overflow-hidden group-hover:scale-110 transition-transform">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <Icon name="Scissors" size={28} className="text-slate-400" />}</div>
-                                        <h3 className="font-bold text-xs lg:text-sm mb-1 line-clamp-2 text-slate-700">{p.name}</h3>
-                                        <p className="text-emerald-700 font-black text-xs lg:text-sm mb-3">
-                                            {p.discount > 0 ? <><span className="line-through text-slate-400 text-[10px] mr-1">{formatRupiah(p.price)}</span>{formatRupiah(p.price - p.discount)}</> : formatRupiah(p.price)}
-                                        </p>
-                                        <div className="mt-auto w-full py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl group-hover:bg-emerald-700 group-hover:text-white transition-colors">+ Tambah</div>
-                                    </button>
-                                ))}
+                                {filteredProducts.map(p => {
+                                    const effectivePrice = (p.price || 0) - (p.discount || 0);
+                                    return (
+                                        <button key={p.id} onClick={() => addToCart(p)} className="bg-white rounded-2xl border border-slate-200 p-3 lg:p-4 flex flex-col items-center text-center hover:border-emerald-600 hover:shadow-lg transition-all group">
+                                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3 overflow-hidden group-hover:scale-110 transition-transform">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <Icon name="Scissors" size={28} className="text-slate-400" />}</div>
+                                            <h3 className="font-bold text-xs lg:text-sm mb-1 line-clamp-2 text-slate-700">{p.name}</h3>
+                                            <p className="text-emerald-700 font-black text-xs lg:text-sm mb-3">
+                                                {p.discount > 0 ? <><span className="line-through text-slate-400 text-[10px] mr-1">{formatRupiah(p.price)}</span>{formatRupiah(effectivePrice > 0 ? effectivePrice : p.price)}</> : formatRupiah(p.price)}
+                                            </p>
+                                            <div className="mt-auto w-full py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl group-hover:bg-emerald-700 group-hover:text-white transition-colors">+ Tambah</div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -805,7 +808,6 @@
 
                         <div className={`fixed inset-0 z-40 bg-slate-800/50 backdrop-blur-sm flex flex-col justify-end md:static md:z-auto md:bg-transparent md:w-[380px] lg:w-[420px] shrink-0 transition-all duration-300 ${isCartMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'}`}>
                             <div className={`bg-white md:bg-transparent h-[90vh] md:h-full w-full rounded-t-3xl md:rounded-none flex flex-col shadow-2xl md:shadow-none border-l-0 md:border-l border-slate-200 transition-transform duration-300 ${isCartMobileOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}`}>
-                                
                                 <div className="p-4 md:p-0 md:mb-3 md:pl-4 border-b md:border-none relative pt-5 md:pt-0 shrink-0">
                                     <div className="flex justify-between items-center mb-4">
                                         <div className="flex items-center gap-2">
@@ -823,15 +825,45 @@
 
                                 <div className="flex-1 overflow-y-auto p-4 md:pl-4 md:py-0 space-y-3 custom-scroll">
                                     {cart.length===0 ? <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm font-bold uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-2xl m-2"><Icon name="Scissors" size={32} className="mb-3 opacity-30"/>Keranjang Kosong</div> : 
-                                    cart.map(i => (
-                                        <div key={i.id} className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm"><div className="flex justify-between items-start mb-3"><div className="flex-1"><h4 className="text-sm font-bold leading-tight text-slate-800">{i.name}</h4><p className="text-xs text-emerald-600 font-bold">{i.discount > 0 ? <><span className="line-through text-slate-400 text-[10px] mr-1">{formatRupiah(i.price)}</span>{formatRupiah(i.price - i.discount)}</> : formatRupiah(i.price)}</p></div><button onClick={()=>removeCartItem(i.id)} className="text-red-400 hover:bg-red-50 p-1.5 rounded-lg transition-colors"><Icon name="Trash2" size={16}/></button></div><div className="flex justify-between items-center"><div className="flex bg-slate-50 border border-slate-200 rounded-xl overflow-hidden"><button onClick={()=>updateQty(i.id, -1)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 font-bold">-</button><input type="number" value={i.qty} onChange={e=>handleQtyChange(i.id, e.target.value)} className="w-10 text-center text-sm font-black border-x border-slate-200 outline-none bg-white"/><button onClick={()=>updateQty(i.id, 1)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 font-bold">+</button></div><p className="text-sm font-black text-slate-800">{formatRupiah((i.price - (i.discount||0))*(parseFloat(i.qty)||0))}</p></div></div>
-                                    ))}
+                                    cart.map(i => {
+                                        const effectivePrice = (i.price || 0) - (i.discount || 0);
+                                        const finalPrice = effectivePrice > 0 ? effectivePrice : i.price;
+                                        return (
+                                            <div key={i.id} className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex-1">
+                                                        <h4 className="text-sm font-bold leading-tight text-slate-800">{i.name}</h4>
+                                                        <p className="text-xs text-emerald-600 font-bold">
+                                                            {i.discount > 0 ? <><span className="line-through text-slate-400 text-[10px] mr-1">{formatRupiah(i.price)}</span>{formatRupiah(finalPrice)}</> : formatRupiah(i.price)}
+                                                        </p>
+                                                    </div>
+                                                    <button onClick={()=>removeCartItem(i.id)} className="text-red-400 hover:bg-red-50 p-1.5 rounded-lg transition-colors"><Icon name="Trash2" size={16}/></button>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+                                                        <button onClick={()=>updateQty(i.id, -1)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 font-bold">-</button>
+                                                        <input type="number" value={i.qty} onChange={e=>handleQtyChange(i.id, e.target.value)} className="w-10 text-center text-sm font-black border-x border-slate-200 outline-none bg-white"/>
+                                                        <button onClick={()=>updateQty(i.id, 1)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 font-bold">+</button>
+                                                    </div>
+                                                    <p className="text-sm font-black text-slate-800">{formatRupiah(finalPrice * (parseFloat(i.qty) || 0))}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
 
                                 <div className="p-4 md:pl-4 border-t border-slate-200 bg-white md:bg-transparent pb-[calc(20px+env(safe-area-inset-bottom))] md:pb-0 shrink-0">
                                     <div className="bg-slate-800 rounded-2xl p-4 text-white shadow-lg shadow-slate-900/20 mb-3">
-                                        <div className={`flex justify-between items-center ${discountVal > 0 ? 'mb-2' : 'mb-3 pb-3 border-b border-slate-600'}`}><span className="text-xs font-bold uppercase tracking-wider text-slate-300">Subtotal</span><span className="font-bold">{formatRupiah(subTotal)}</span></div>
-                                        {discountVal > 0 && <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-600"><span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Total Diskon</span><span className="text-emerald-400 font-bold">-{formatRupiah(discountVal)}</span></div>}
+                                        <div className={`flex justify-between items-center ${totalDiscount > 0 ? 'mb-2' : 'mb-3 pb-3 border-b border-slate-600'}`}>
+                                            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Subtotal</span>
+                                            <span className="font-bold">{formatRupiah(subTotal + totalDiscount)}</span>
+                                        </div>
+                                        {totalDiscount > 0 && (
+                                            <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-600">
+                                                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Total Diskon Item</span>
+                                                <span className="text-emerald-400 font-bold">-{formatRupiah(totalDiscount)}</span>
+                                            </div>
+                                        )}
                                         <div className="flex justify-between items-end"><span className="text-sm font-bold uppercase tracking-widest text-slate-200">Total Tagihan</span><span className="text-2xl font-black">{formatRupiah(totalCart)}</span></div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3"><button onClick={handleCheckoutTunda} disabled={cart.length===0} className="py-3.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors disabled:opacity-50"><Icon name="Clock" size={16}/>Antre</button><button onClick={()=>setShowPaymentModal(true)} disabled={cart.length===0} className="py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 transition-colors disabled:opacity-50"><Icon name="Wallet" size={16}/>Bayar</button></div>
@@ -1015,7 +1047,7 @@
                     <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8"><form onSubmit={handleSave} className="space-y-6">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-6 border-b border-slate-100 pb-6">
                             <div className="w-24 h-24 bg-white rounded-full border-4 border-slate-100 flex items-center justify-center relative overflow-hidden group">
-                                {formData.logo ? <img src={formData.logo} className="w-full h-full object-contain p-2"/> : <Icon name="Scissors" size={32} className="text-slate-300"/>}
+                                {formData.logo ? <img src={formData.logo} className="w-full h-full object-contain p-1"/> : <Icon name="Scissors" size={32} className="text-slate-300"/>}
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><span className="text-[10px] text-white font-bold uppercase">Ubah</span></div>
                                 <input type="file" accept="image/*" onChange={handleLogoUpload} className="absolute inset-0 opacity-0 cursor-pointer"/>
                             </div>
@@ -1026,7 +1058,10 @@
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div><label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nama Barbershop</label><input type="text" required value={formData.storeName || ''} onChange={e=>setFormData({...formData, storeName:e.target.value})} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-emerald-500 font-bold"/></div>
-                            <div><label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">No. WhatsApp / Telp</label><input type="text" required value={formData.phone || ''} onChange={e=>setFormData({...formData, phone:e.target.value})} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-emerald-500 font-bold"/></div>
+                            <div><label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">No. WhatsApp / Telp Toko</label><input type="text" required value={formData.phone || ''} onChange={e=>setFormData({...formData, phone:e.target.value})} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-emerald-500 font-bold"/></div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">No. WA Admin (Untuk Notif Booking)</label><input type="text" required value={formData.adminPhone || ''} onChange={e=>setFormData({...formData, adminPhone:e.target.value})} placeholder="Cth: 628123456789" className="w-full px-4 py-3 border-2 border-emerald-200 bg-emerald-50/30 rounded-xl outline-none focus:border-emerald-500 font-bold"/></div>
                         </div>
                         <div><label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Alamat Lengkap</label><textarea required rows="3" value={formData.address || ''} onChange={e=>setFormData({...formData, address:e.target.value})} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-emerald-500 font-medium"/></div>
                         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
@@ -1081,6 +1116,227 @@
 
         function NavItem({ icon, label, isActive, onClick }) {
             return (<button onClick={onClick} className={`flex flex-col items-center justify-center w-16 transition-colors ${isActive ? 'text-emerald-700' : 'text-slate-400 hover:text-slate-600'}`}><div className={`transition-transform ${isActive ? 'scale-110 mb-1' : 'scale-100 mb-0'}`}>{icon}</div><span className={`text-[10px] font-black uppercase tracking-wider transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 h-0'}`}>{label}</span></button>);
+        }
+
+        function App() {
+            const [appMode, setAppMode] = useState('splash');
+            const [isDbLoading, setIsDbLoading] = useState(false);
+            
+            const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('kassqu_user') !== null);
+            const [currentUser, setCurrentUser] = useState(() => {
+                const saved = localStorage.getItem('kassqu_user');
+                return saved ? JSON.parse(saved) : null;
+            });
+            const [activeTab, setActiveTab] = useState(() => localStorage.getItem('kassqu_tab') || 'dashboard');
+            
+            const [searchQuery, setSearchQuery] = useState('');
+            
+            const [settings, setSettings] = useState(() => {
+                const saved = localStorage.getItem('kassqu_settings');
+                return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
+            });
+
+            const [products, setProducts] = useState(INITIAL_PRODUCTS);
+            const [transactions, setTransactions] = useState([]);
+
+            const [loginError, setLoginError] = useState('');
+            const [editingTrx, setEditingTrx] = useState(null);
+
+            const [showAuthModal, setShowAuthModal] = useState(false);
+            const [pendingAuthAction, setPendingAuthAction] = useState(null);
+
+            const [appAlert, setAppAlert] = useState(null); 
+            const showAlert = (message, type = 'error') => { setAppAlert({ message, type }); };
+
+            useEffect(() => { localStorage.setItem('kassqu_tab', activeTab); }, [activeTab]);
+
+            useEffect(() => {
+                let isMounted = true;
+                const fetchInitialData = async () => {
+                    const result = await callGasApi({ action: 'GET_DATA' });
+                    if (result.status === 'success' && isMounted) {
+                        if (result.data.settings && Object.keys(result.data.settings).length > 0) {
+                            setSettings(result.data.settings);
+                            localStorage.setItem('kassqu_settings', JSON.stringify(result.data.settings));
+                        }
+                        if (result.data.products && result.data.products.length > 0) setProducts(result.data.products);
+                        if (result.data.transactions) setTransactions(result.data.transactions);
+                    } else {
+                        const localTrx = localStorage.getItem('kassqu_transactions');
+                        if (localTrx) setTransactions(JSON.parse(localTrx));
+                    }
+                };
+
+                fetchInitialData();
+
+                // Timer transisi dari splash screen ke mode landing page publik
+                setTimeout(() => {
+                    if (isMounted) {
+                        const savedUser = localStorage.getItem('kassqu_user');
+                        setAppMode(savedUser ? 'cashier' : 'landing');
+                    }
+                }, 1500);
+                
+                return () => { isMounted = false; };
+            }, []);
+
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                setIsDbLoading(true);
+                setLoginError('');
+                
+                const formData = new FormData(e.target);
+                const user = formData.get('username');
+                const pass = formData.get('password');
+
+                const result = await callGasApi({ action: 'VERIFY_LOGIN', username: user, password: pass });
+                
+                if (result.status === 'success') {
+                    setCurrentUser(result.user);
+                    localStorage.setItem('kassqu_user', JSON.stringify(result.user));
+                    setIsLoggedIn(true); 
+                    setAppMode('cashier');
+                } else {
+                    setLoginError(result.message || 'Username/Password salah!');
+                }
+                setIsDbLoading(false);
+            };
+
+            const requestAuth = (actionCallback) => {
+                const currentKode = String(currentUser?.kodeKasir || '').toLowerCase();
+                if (currentKode === 'admin' || currentKode.includes('admin')) {
+                    actionCallback();
+                } else {
+                    setPendingAuthAction(() => actionCallback);
+                    setShowAuthModal(true);
+                }
+            };
+
+            const updateSettingsDb = async (newData) => { 
+                setSettings(newData);
+                localStorage.setItem('kassqu_settings', JSON.stringify(newData)); 
+                await callGasApi({ action: 'SAVE_SETTINGS', data: newData });
+            };
+            const saveProductDb = async (prod) => {
+                const newProds = products.find(p => p.id === prod.id) ? products.map(p => p.id === prod.id ? prod : p) : [...products, prod];
+                setProducts(newProds); 
+                await callGasApi({ action: 'SAVE_PRODUCT', data: prod });
+            };
+            const deleteProductDb = async (id) => { 
+                setProducts(products.filter(p => p.id !== id)); 
+                await callGasApi({ action: 'DELETE_PRODUCT', id: id });
+            };
+            const saveTransactionDb = async (trx) => {
+                const newTrxs = transactions.find(t => t.id === trx.id) ? transactions.map(t => t.id === trx.id ? trx : t) : [...transactions, trx];
+                setTransactions(newTrxs); 
+                localStorage.setItem('kassqu_transactions', JSON.stringify(newTrxs));
+                await callGasApi({ action: 'SAVE_TRANSACTION', data: trx });
+            };
+            const deleteTransactionDb = async (id) => { 
+                setTransactions(transactions.filter(t => t.id !== id)); 
+                try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'DELETE_TRANSACTION', id: id }) }); } catch (e) { console.error(e); }
+            };
+
+            const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+
+            if (appMode === 'splash') {
+                return (
+                    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white bg-gray-900 touch-none overscroll-none" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                        <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-md"></div>
+                        <div className="relative z-10 flex flex-col items-center animate-in fade-in duration-700">
+                            <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-2xl border-4 border-emerald-500/30 mb-4 p-2 overflow-hidden">
+                                <img src={KASSQU_LOGO} alt="KassQu Logo" className="w-full h-full object-contain" onError={(e) => { e.target.onerror = null; e.target.parentElement.innerHTML = '<span class="text-5xl font-black text-emerald-600 tracking-tighter italic">KQ</span>'; }} />
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-black tracking-tight drop-shadow-lg text-white mb-1">KassQu</h1>
+                            <p className="text-xs font-bold tracking-[0.3em] uppercase text-emerald-400 mb-10">POS System</p>
+                            <div className="w-10 h-10 rounded-full animate-spin border-[4px] border-white/20 border-t-emerald-500"></div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (appMode === 'landing') {
+                return <LandingView settings={settings} products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} onGoToLogin={() => setAppMode('login')} formatRupiah={formatRupiah} showAlert={showAlert} />;
+            }
+
+            if (appMode === 'login') {
+                return (
+                    <div className="fixed inset-0 z-50 flex flex-col justify-center items-center p-4 font-sans bg-gray-900 overflow-y-auto overscroll-none" style={{ backgroundImage: `url('${LOGIN_BG_IMAGE}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 to-gray-900/80 backdrop-blur-[4px]"></div>
+                        <div className="relative z-10 bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-md border border-white/20">
+                            <button onClick={() => setAppMode('landing')} className="absolute top-4 left-4 text-white/70 hover:text-white flex items-center gap-1 text-xs font-bold bg-white/10 px-3 py-1.5 rounded-lg transition-colors backdrop-blur-sm"><Icon name="Home" size={14}/> Batal</button>
+                            <div className="text-center mb-6 flex flex-col items-center mt-2">
+                                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-white/30 overflow-hidden p-1.5">
+                                    <img src={settings?.logo || KASSQU_LOGO} alt="Logo Toko" className="w-full h-full object-contain" />
+                                </div>
+                                <h1 className="text-2xl font-black text-white tracking-wide uppercase drop-shadow-md leading-tight">{settings?.storeName || 'SISTEM KASIR'}</h1>
+                                <p className="text-gray-300 text-sm mt-2 font-medium">Masuk ke Sistem Barbershop</p>
+                            </div>
+                            {loginError && <div className="mb-4 p-3 bg-red-100/90 text-red-700 rounded-lg text-sm font-bold flex justify-center text-center gap-2 border border-red-200"><Icon name="XCircle" size={16} className="shrink-0 mt-0.5" /> <span>{loginError}</span></div>}
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <input type="text" name="username" placeholder="Username" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
+                                <input type="password" name="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
+                                <button type="submit" disabled={isDbLoading} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-lg border border-emerald-500/50 hover:shadow-emerald-500/50 transition-all">{isDbLoading ? 'Memproses...' : 'Login Kasir'}</button>
+                            </form>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-[100dvh] bg-gray-50 flex flex-col font-sans pb-[calc(82px+env(safe-area-inset-bottom))] print:pb-0 print:bg-white">
+                    <header className="bg-white shadow-sm sticky top-0 z-20 print:hidden" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', paddingBottom: '12px' }}>
+                        <div className="max-w-[1920px] mx-auto px-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                {settings?.logo ? <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200 overflow-hidden p-0.5"><img src={settings.logo} alt="Logo" className="w-full h-full object-contain" /></div> : <div className="w-10 h-10 bg-emerald-800 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
+                                <div><h1 className="font-bold text-gray-800 text-sm sm:text-lg leading-tight uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1><p className="text-[10px] text-gray-500 font-medium flex items-center gap-1"><Icon name="UserCircle" size={12}/> {currentUser?.namaKasir || 'Staff'}</p></div>
+                            </div>
+                            <div className="hidden sm:flex flex-1 max-w-lg mx-8 relative">
+                                <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input type="text" placeholder="Cari pesanan, produk..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-11 pr-4 py-2.5 bg-gray-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all"/>
+                            </div>
+                            <button onClick={() => { setAppMode('landing'); setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); setActiveTab('dashboard'); }} className="text-gray-500 hover:text-red-500 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-gray-50 hover:bg-red-50 rounded-lg">
+                                <Icon name="LogOut" size={18} /> <span className="hidden sm:inline">Keluar</span>
+                            </button>
+                        </div>
+                    </header>
+
+                    <main className="flex-1 max-w-[1920px] mx-auto w-full p-4 md:p-6 print:p-0">
+                        {activeTab === 'dashboard' && <DashboardView transactions={transactions} formatRupiah={formatRupiah} settings={settings} onSaveSettings={updateSettingsDb} requestAuth={requestAuth} />}
+                        {activeTab === 'produk' && <ProdukView products={products} onSaveProduct={saveProductDb} onDeleteProduct={deleteProductDb} formatRupiah={formatRupiah} searchQuery={searchQuery} compressImage={compressImage} settings={settings} onSaveSettings={updateSettingsDb} showAlert={showAlert} />}
+                        {activeTab === 'kasir' && <KasirView products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} formatRupiah={formatRupiah} parseThousand={parseThousand} formatThousand={formatThousand} searchQuery={searchQuery} settings={settings} editingTrx={editingTrx} clearEditingTrx={() => setEditingTrx(null)} showAlert={showAlert} />}
+                        {activeTab === 'laporan' && <LaporanView transactions={transactions} onDeleteTransaction={deleteTransactionDb} onUpdateTransaction={saveTransactionDb} formatRupiah={formatRupiah} searchQuery={searchQuery} onLoadToKasir={(trx)=>{setEditingTrx(trx); setActiveTab('kasir');}} settings={settings} showAlert={showAlert} />}
+                        {activeTab === 'setup' && <SetupView settings={settings} onSaveSettings={updateSettingsDb} compressImage={compressImage} />}
+                    </main>
+
+                    <nav className="fixed bottom-[calc(6px+env(safe-area-inset-bottom,0px))] left-4 right-4 max-w-xl mx-auto bg-white border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex justify-around items-center h-16 z-30 px-2 sm:px-6 rounded-2xl print:hidden animate-in slide-in-from-bottom-5">
+                        <NavItem icon={<Icon name="Home" size={24} />} label="Dashboard" isActive={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
+                        <NavItem icon={<Icon name="Package" size={24} />} label="Layanan" isActive={activeTab === 'produk'} onClick={() => requestAuth(() => setActiveTab('produk'))} />
+                        <div className="-mt-6 relative flex flex-col items-center">
+                            <button onClick={() => setActiveTab('kasir')} className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg text-white transition-transform hover:scale-105 active:scale-95 ${activeTab === 'kasir' ? 'bg-emerald-800 ring-4 ring-emerald-100' : 'bg-emerald-600'}`}><Icon name="ShoppingCart" size={26} /></button>
+                            <span className={`text-[10px] font-bold mt-1 ${activeTab === 'kasir' ? 'text-emerald-800' : 'text-gray-500'}`}>KASIR</span>
+                        </div>
+                        <NavItem icon={<Icon name="FileText" size={24} />} label="Laporan" isActive={activeTab === 'laporan'} onClick={() => setActiveTab('laporan')} />
+                        <NavItem icon={<Icon name="Settings" size={24} />} label="Setup" isActive={activeTab === 'setup'} onClick={() => requestAuth(() => setActiveTab('setup'))} />
+                    </nav>
+
+                    {appAlert && (
+                        <div className="fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                            <div className="bg-white rounded-3xl p-6 max-w-xs w-full shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-gray-100">
+                                <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${appAlert.type === 'error' ? 'bg-red-50 text-red-500' : appAlert.type === 'info' ? 'bg-emerald-50 text-emerald-500' : 'bg-green-50 text-green-500'}`}>
+                                    <Icon name={appAlert.type === 'error' ? 'XCircle' : 'CheckCircle2'} size={32} />
+                                </div>
+                                <h3 className="font-bold text-gray-800 text-lg mb-2">Info</h3>
+                                <p className="text-xs text-gray-500 mb-6 leading-relaxed">{appAlert.message}</p>
+                                <button onClick={() => setAppAlert(null)} className={`w-full text-white font-bold py-3 rounded-2xl shadow-lg active:scale-95 transition-all text-sm ${appAlert.type === 'error' ? 'bg-red-600 hover:bg-red-700 shadow-red-100' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100'}`}>Mengerti</button>
+                            </div>
+                        </div>
+                    )}
+                    {showAuthModal && (
+                        <AdminAuthModal showAlert={showAlert} onClose={() => { setShowAuthModal(false); setPendingAuthAction(null); }} onConfirm={() => { setShowAuthModal(false); if (pendingAuthAction) pendingAuthAction(); setPendingAuthAction(null); }} />
+                    )}
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
