@@ -1305,6 +1305,8 @@
                     </header>
 
                     <main className="flex-1 max-w-[1920px] mx-auto w-full p-4 md:p-6 print:p-0">
+                        <main className="flex-1 max-w-[1920px] mx-auto w-full p-4 md:p-6 print:p-0">
+                        {activeTab === 'landing' && <LandingView products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} settings={settings} formatRupiah={formatRupiah} onGoToLogin={() => {}} showAlert={showAlert} />}
                         {activeTab === 'dashboard' && <DashboardView transactions={transactions} formatRupiah={formatRupiah} settings={settings} onSaveSettings={updateSettingsDb} requestAuth={requestAuth} />}
                         {activeTab === 'produk' && <ProdukView products={products} onSaveProduct={saveProductDb} onDeleteProduct={deleteProductDb} formatRupiah={formatRupiah} searchQuery={searchQuery} compressImage={compressImage} settings={settings} onSaveSettings={updateSettingsDb} showAlert={showAlert} />}
                         {activeTab === 'kasir' && <KasirView products={products} transactions={transactions} onSaveTransaction={saveTransactionDb} formatRupiah={formatRupiah} parseThousand={parseThousand} formatThousand={formatThousand} searchQuery={searchQuery} settings={settings} editingTrx={editingTrx} clearEditingTrx={() => setEditingTrx(null)} showAlert={showAlert} />}
