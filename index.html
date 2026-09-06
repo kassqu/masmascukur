@@ -86,7 +86,9 @@
             Receipt: <><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 8h-6"/><path d="M16 12h-8"/><path d="M16 16h-8"/></>,
             UserCircle: <><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></>,
             Tag: <><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></>,
-            Lock: <><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>
+            Lock: <><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>,
+            ChevronLeft: <polyline points="15 18 9 12 15 6"/>,
+            ChevronRight: <polyline points="9 18 15 12 9 6"/>
         };
 
         const Icon = ({ name, size = 24, className = "" }) => (
@@ -209,20 +211,34 @@
         }
 
         function LandingView({ settings, products, transactions, onSaveTransaction, onGoToLogin, formatRupiah, showAlert, isLoggedIn }) {
+            const getLocalYYYYMMDD = () => {
+                const d = new Date();
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            };
+
             const [customerName, setCustomerName] = useState('');
             const [customerPhone, setCustomerPhone] = useState('');
-            const [pickupDate, setPickupDate] = useState(new Date().toISOString().split('T')[0]);
-            const [pickupTime, setPickupTime] = useState('10:00');
+            const [pickupDate, setPickupDate] = useState(getLocalYYYYMMDD());
+            const [pickupTime, setPickupTime] = useState('');
             const [selectedService, setSelectedService] = useState('');
             const [isSubmitting, setIsSubmitting] = useState(false);
             
+            // State untuk kalender
+            const [currentMonth, setCurrentMonth] = useState(new Date());
+
             const bookableCats = settings?.bookableCategories || settings?.categories || [];
             const bookableProducts = products.filter(p => bookableCats.includes(p.category));
 
+            const bookedTimesForDate = transactions
+                .filter(t => t.progressStatus !== 'Selesai' && t.pickupDate && t.pickupDate.startsWith(pickupDate))
+                .map(t => t.pickupDate.split('T')[1].substring(0, 5));
+
             const timeSlots = [];
             for (let i = 10; i <= 22; i++) {
-                timeSlots.push(`${i.toString().padStart(2, '0')}:00`);
-                if (i !== 22) timeSlots.push(`${i.toString().padStart(2, '0')}:30`);
+                const time1 = `${i.toString().padStart(2, '0')}:00`;
+                const time2 = `${i.toString().padStart(2, '0')}:30`;
+                timeSlots.push({ time: time1, available: !bookedTimesForDate.includes(time1) });
+                if (i !== 22) timeSlots.push({ time: time2, available: !bookedTimesForDate.includes(time2) });
             }
 
             const activeQueue = transactions
@@ -233,6 +249,12 @@
                 e.preventDefault();
                 if(!selectedService) { showAlert('Pilih layanan terlebih dahulu!', 'error'); return; }
                 
+                const selectedSlot = timeSlots.find(s => s.time === pickupTime);
+                if (selectedSlot && !selectedSlot.available) {
+                    showAlert('Jam tersebut sudah penuh, silakan pilih jam lain.', 'error');
+                    return;
+                }
+
                 setIsSubmitting(true);
                 const service = products.find(p => p.id == selectedService);
                 const todayStr = new Date().toISOString().split('T')[0];
@@ -273,8 +295,16 @@
                 
                 window.open(`https://wa.me/${cleanAdminPhone}?text=${encodeURIComponent(waText)}`, '_blank');
                 
-                setCustomerName(''); setCustomerPhone(''); setSelectedService('');
+                setCustomerName(''); setCustomerPhone(''); setSelectedService(''); setPickupTime('');
             };
+
+            // Logika Generator Kalender
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay(); // 0 is Sunday
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
             return (
                 <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -330,22 +360,58 @@
                                         <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">No. WhatsApp</label>
                                         <input type="tel" required value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)} placeholder="Contoh: 08123456789" className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors" />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Tanggal</label>
-                                            <input type="date" required value={pickupDate} onChange={e=>setPickupDate(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors" />
+                                    
+                                    <div className="pt-2">
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Pilih Jadwal Booking</label>
+                                        
+                                        {/* Komponen Kalender Compact */}
+                                        <div className="bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl shadow-sm mb-4 select-none">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <button type="button" onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 bg-white border border-slate-200 shadow-sm rounded-lg hover:bg-slate-100 transition-colors active:scale-95 text-slate-600"><Icon name="ChevronLeft" size={16} /></button>
+                                                <span className="font-black text-slate-800 tracking-wide">{monthNames[month]} {year}</span>
+                                                <button type="button" onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 bg-white border border-slate-200 shadow-sm rounded-lg hover:bg-slate-100 transition-colors active:scale-95 text-slate-600"><Icon name="ChevronRight" size={16} /></button>
+                                            </div>
+                                            <div className="grid grid-cols-7 gap-1 mb-2">
+                                                {dayNames.map(d => <div key={d} className="text-center text-[10px] font-black text-slate-400 uppercase">{d}</div>)}
+                                            </div>
+                                            <div className="grid grid-cols-7 gap-1">
+                                                {Array.from({ length: firstDay }, (_, i) => <div key={`blank-${i}`} className="p-2"></div>)}
+                                                {Array.from({ length: daysInMonth }, (_, i) => {
+                                                    const d = i + 1;
+                                                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                                                    const isSelected = pickupDate === dateStr;
+                                                    const isPast = new Date(dateStr) < new Date(new Date().setHours(0,0,0,0));
+
+                                                    return (
+                                                        <button
+                                                            key={d} type="button" disabled={isPast} onClick={() => { setPickupDate(dateStr); setPickupTime(''); }}
+                                                            className={`p-2 w-full text-center rounded-xl text-sm font-bold transition-all ${isPast ? 'text-slate-300 cursor-not-allowed bg-transparent' : isSelected ? 'bg-emerald-600 text-white shadow-md scale-105' : 'bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700'}`}
+                                                        >
+                                                            {d}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Jam</label>
-                                            <select required value={pickupTime} onChange={e=>setPickupTime(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors cursor-pointer">
-                                                <option value="" disabled>-- Pilih Jam --</option>
-                                                {timeSlots.map(time => (
-                                                    <option key={time} value={time}>{time} WIB</option>
+
+                                        {/* Pilihan Jam */}
+                                        <div className="bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl shadow-sm">
+                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2"><Icon name="Clock" size={14}/> Jam Tersedia tgl {new Date(pickupDate).getDate()} {monthNames[new Date(pickupDate).getMonth()]}</p>
+                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                                {timeSlots.map(slot => (
+                                                    <button
+                                                        key={slot.time} type="button" disabled={!slot.available} onClick={() => setPickupTime(slot.time)}
+                                                        className={`py-2 px-1 rounded-xl text-[13px] font-bold border-2 transition-all active:scale-95 ${!slot.available ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed line-through' : pickupTime === slot.time ? 'bg-emerald-700 border-emerald-700 text-white shadow-md' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700'}`}
+                                                    >
+                                                        {slot.time}
+                                                    </button>
                                                 ))}
-                                            </select>
+                                            </div>
+                                            {!pickupTime && <p className="text-[10px] text-red-500 font-bold mt-3">* Silakan pilih jam booking terlebih dahulu.</p>}
                                         </div>
                                     </div>
-                                    <div>
+
+                                    <div className="pt-2">
                                         <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Pilih Layanan</label>
                                         <select required value={selectedService} onChange={e=>setSelectedService(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-sm bg-slate-50 focus:bg-white transition-colors">
                                             <option value="" disabled>Pilih Layanan Utama</option>
@@ -739,21 +805,34 @@
         }
 
         function KasirView({ products, transactions, onSaveTransaction, formatRupiah, parseThousand, formatThousand, searchQuery, settings, editingTrx, clearEditingTrx, showAlert }) {
+            const getLocalYYYYMMDD = () => {
+                const d = new Date();
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            };
+
             const [cart, setCart] = useState([]);
-            const [customerName, setCustomerName] = useState(''); const [customerPhone, setCustomerPhone] = useState(''); const [pickupDate, setPickupDate] = useState(new Date().toISOString().split('T')[0]);
+            const [customerName, setCustomerName] = useState(''); const [customerPhone, setCustomerPhone] = useState(''); const [pickupDate, setPickupDate] = useState(getLocalYYYYMMDD());
             const [trxId, setTrxId] = useState(null); 
             const [receiptData, setReceiptData] = useState(null);
             const [showPaymentModal, setShowPaymentModal] = useState(false);
             const [isCartMobileOpen, setIsCartMobileOpen] = useState(false); 
+            const [selectedCategory, setSelectedCategory] = useState('Semua');
 
             useEffect(() => { 
                 if (editingTrx) { 
-                    setCart(editingTrx.items || []); setCustomerName(editingTrx.customer || ''); setCustomerPhone(editingTrx.customerPhone || ''); setPickupDate(editingTrx.pickupDate ? editingTrx.pickupDate.slice(0, 10) : new Date().toISOString().split('T')[0]); setTrxId(editingTrx.id);
+                    setCart(editingTrx.items || []); setCustomerName(editingTrx.customer || ''); setCustomerPhone(editingTrx.customerPhone || ''); setPickupDate(editingTrx.pickupDate ? editingTrx.pickupDate.slice(0, 10) : getLocalYYYYMMDD()); setTrxId(editingTrx.id);
                 } 
             }, [editingTrx]);
 
-            const cancelEdit = () => { setCart([]); setCustomerName(''); setCustomerPhone(''); setPickupDate(new Date().toISOString().split('T')[0]); setTrxId(null); clearEditingTrx(); setIsCartMobileOpen(false); };
-            const filteredProducts = products.filter(p => (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()));
+            const cancelEdit = () => { setCart([]); setCustomerName(''); setCustomerPhone(''); setPickupDate(getLocalYYYYMMDD()); setTrxId(null); clearEditingTrx(); setIsCartMobileOpen(false); };
+            
+            const categories = ['Semua', ...(settings?.categories || [])];
+            const filteredProducts = products.filter(p => {
+                const matchSearch = (p.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+                const matchCategory = selectedCategory === 'Semua' || p.category === selectedCategory;
+                return matchSearch && matchCategory;
+            });
+
             const addToCart = (product) => { setCart(cart.find(i => i.id === product.id) ? cart.map(i => i.id === product.id ? { ...i, qty: (parseFloat(i.qty) || 0) + 1 } : i) : [...cart, { ...product, qty: 1 }]); };
             const updateQty = (id, delta) => { setCart(cart.map(i => { if (i.id === id) { const n = (parseFloat(i.qty) || 0) + delta; return n > 0 ? { ...i, qty: n } : null; } return i; }).filter(Boolean)); };
             const handleQtyChange = (id, val) => setCart(cart.map(i => i.id === id ? { ...i, qty: val } : i));
@@ -825,22 +904,32 @@
             return (
                 <>
                     <div className="flex flex-row gap-4 lg:gap-6 animate-in fade-in h-[calc(100vh-160px)] lg:h-[calc(100vh-140px)] relative overflow-hidden">
-                        <div className="flex-1 overflow-y-auto pr-2 pb-36 md:pb-4 custom-scroll">
-                            <h2 className="text-xl font-black text-slate-800 mb-4 uppercase tracking-tight">Pilih Layanan</h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 lg:gap-4">
-                                {filteredProducts.map(p => {
-                                    const effectivePrice = (p.price || 0) - (p.discount || 0);
-                                    return (
-                                        <button key={p.id} onClick={() => addToCart(p)} className="bg-white rounded-2xl border border-slate-200 p-3 lg:p-4 flex flex-col items-center text-center hover:border-emerald-600 hover:shadow-lg transition-all group">
-                                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3 overflow-hidden group-hover:scale-110 transition-transform">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <Icon name="Scissors" size={28} className="text-slate-400" />}</div>
-                                            <h3 className="font-bold text-xs lg:text-sm mb-1 line-clamp-2 text-slate-700">{p.name}</h3>
-                                            <p className="text-emerald-700 font-black text-xs lg:text-sm mb-3">
-                                                {p.discount > 0 ? <><span className="line-through text-slate-400 text-[10px] mr-1">{formatRupiah(p.price)}</span>{formatRupiah(effectivePrice > 0 ? effectivePrice : p.price)}</> : formatRupiah(p.price)}
-                                            </p>
-                                            <div className="mt-auto w-full py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl group-hover:bg-emerald-700 group-hover:text-white transition-colors">+ Tambah</div>
-                                        </button>
-                                    );
-                                })}
+                        <div className="flex-1 overflow-y-auto pr-2 pb-36 md:pb-4 custom-scroll flex flex-col">
+                            <h2 className="text-xl font-black text-slate-800 mb-4 uppercase tracking-tight shrink-0">Pilih Layanan</h2>
+                            <div className="flex gap-2 overflow-x-auto pb-2 mb-4 shrink-0" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                                <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+                                {categories.map(c => (
+                                    <button key={c} onClick={() => setSelectedCategory(c)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border-2 ${selectedCategory === c ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}>{c}</button>
+                                ))}
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 lg:gap-4 overflow-y-auto pb-4 content-start flex-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                                {filteredProducts.length === 0 ? (
+                                    <div className="col-span-full text-center py-10 text-slate-400 font-bold text-sm border-2 border-dashed border-slate-200 rounded-2xl">Tidak ada layanan ditemukan.</div>
+                                ) : (
+                                    filteredProducts.map(p => {
+                                        const effectivePrice = (p.price || 0) - (p.discount || 0);
+                                        return (
+                                            <button key={p.id} onClick={() => addToCart(p)} className="bg-white rounded-2xl border border-slate-200 p-3 lg:p-4 flex flex-col items-center text-center hover:border-emerald-600 hover:shadow-lg transition-all group">
+                                                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3 overflow-hidden group-hover:scale-110 transition-transform">{p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <Icon name="Scissors" size={28} className="text-slate-400" />}</div>
+                                                <h3 className="font-bold text-xs lg:text-sm mb-1 line-clamp-2 text-slate-700">{p.name}</h3>
+                                                <p className="text-emerald-700 font-black text-xs lg:text-sm mb-3">
+                                                    {p.discount > 0 ? <><span className="line-through text-slate-400 text-[10px] mr-1">{formatRupiah(p.price)}</span>{formatRupiah(effectivePrice > 0 ? effectivePrice : p.price)}</> : formatRupiah(p.price)}
+                                                </p>
+                                                <div className="mt-auto w-full py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl group-hover:bg-emerald-700 group-hover:text-white transition-colors">+ Tambah</div>
+                                            </button>
+                                        );
+                                    })
+                                )}
                             </div>
                         </div>
 
@@ -1131,7 +1220,110 @@
         }
 
         function ReceiptModal({ data, settings, onClose, formatRupiah, showAlert }) {
-            const handleWA = () => { if(data.customerPhone) window.open(`https://wa.me/${data.customerPhone.startsWith('0')?'62'+data.customerPhone.slice(1):data.customerPhone}?text=${encodeURIComponent(`Halo *${data.customer || 'Pelanggan'}*,\nBerikut rincian pesanan dari *${settings?.storeName || 'Barbershop'}*:\n\nNo. Antrean: *${data.queueNumber || '-'}*\nID Ref: *${data.id}*\nTotal Tagihan: *${formatRupiah(data.total || 0)}*\nStatus: *${data.status || '-'} ${data.paymentMethod && data.paymentMethod !== '-' ? `(${data.paymentMethod})` : ''}*\nProses: *${data.progressStatus || 'Baru Masuk'}*\nJadwal Booking: *${data.pickupDate ? new Date(data.pickupDate).toLocaleDateString('id-ID') : '-'}*\n\n_${settings?.receiptFooter || '*** TERIMA KASIH ***'}_`)}`,'_blank'); };
+            const handleWA = () => { 
+                if (!data.customerPhone || data.customerPhone === '-' || data.customerPhone.trim() === '') {
+                    showAlert('Nomor WhatsApp pelanggan tidak diisi/tidak valid saat transaksi.', 'error');
+                    return;
+                }
+                const phone = data.customerPhone.startsWith('0') ? '62' + data.customerPhone.slice(1) : data.customerPhone;
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Halo *${data.customer || 'Pelanggan'}*,\nBerikut rincian pesanan dari *${settings?.storeName || 'Barbershop'}*:\n\nNo. Antrean: *${data.queueNumber || '-'}*\nID Ref: *${data.id}*\nTotal Tagihan: *${formatRupiah(data.total || 0)}*\nStatus: *${data.status || '-'} ${data.paymentMethod && data.paymentMethod !== '-' ? `(${data.paymentMethod})` : ''}*\nProses: *${data.progressStatus || 'Baru Masuk'}*\nJadwal Booking: *${data.pickupDate ? new Date(data.pickupDate).toLocaleDateString('id-ID') : '-'}*\n\n_${settings?.receiptFooter || '*** TERIMA KASIH ***'}_`)}`,'_blank'); 
+            };
+
+            const handleBluetoothPrint = async () => {
+                // Formatting Struk untuk dicetak di Printer Thermal
+                const pad = (str, len) => (str || '').padEnd(len, ' ').substring(0, len);
+                const padLeft = (str, len) => (str || '').padStart(len, ' ').substring(0, len);
+                const line = '-'.repeat(32) + '\n';
+                
+                let txt = '\n';
+                const storeName = (settings?.storeName || 'BARBERSHOP').toUpperCase();
+                txt += padLeft(storeName, Math.floor((32 + storeName.length) / 2)) + '\n';
+                if(settings?.address) txt += settings.address.substring(0, 32) + '\n';
+                if(settings?.phone) txt += settings.phone + '\n';
+                txt += line;
+                txt += `ANTREAN : ${data.queueNumber || '-'}\n`;
+                txt += `ID TRX  : ${data.id}\n`;
+                txt += `TANGGAL : ${data.date ? new Date(data.date).toLocaleDateString('id-ID') : '-'}\n`;
+                txt += `NAMA    : ${data.customer || 'Pelanggan'}\n`;
+                txt += line;
+                
+                (data.items || []).forEach(i => {
+                    txt += `${i.name.toUpperCase()}\n`;
+                    const qtyPrice = `${i.qty}x @${i.price}`;
+                    const total = `${i.qty * i.price}`;
+                    txt += `${pad(qtyPrice, 20)}${padLeft(total, 12)}\n`;
+                });
+                
+                txt += line;
+                if (data.discount > 0) {
+                    txt += `${pad('SUBTOTAL', 20)}${padLeft(''+(data.total + data.discount), 12)}\n`;
+                    txt += `${pad('DISKON', 20)}${padLeft('-'+data.discount, 12)}\n`;
+                }
+                txt += `${pad('TOTAL', 20)}${padLeft(''+data.total, 12)}\n`;
+                txt += line;
+                txt += `STATUS  : ${data.status} ${data.paymentMethod && data.paymentMethod !== '-' ? `(${data.paymentMethod})` : ''}\n`;
+                if (data.status === 'Lunas' && data.amountReceived > 0) {
+                    txt += `${pad('DITERIMA', 20)}${padLeft(''+data.amountReceived, 12)}\n`;
+                    txt += `${pad('KEMBALI', 20)}${padLeft(''+(data.change || 0), 12)}\n`;
+                }
+                txt += line;
+                txt += (settings?.receiptFooter || 'TERIMA KASIH').replace(/\\n/g, '\n') + '\n\n\n\n';
+
+                try {
+                    // Cek ketersediaan Web Bluetooth API (Google Chrome)
+                    if (navigator.bluetooth) {
+                        try {
+                            const device = await navigator.bluetooth.requestDevice({
+                                acceptAllDevices: true,
+                                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2'] // UUID umum printer thermal
+                            });
+                            
+                            const server = await device.gatt.connect();
+                            const services = await server.getPrimaryServices();
+                            let printChar = null;
+                            
+                            for (const s of services) {
+                                const chars = await s.getCharacteristics();
+                                for (const c of chars) {
+                                    if (c.properties.write || c.properties.writeWithoutResponse) {
+                                        printChar = c; break;
+                                    }
+                                }
+                                if (printChar) break;
+                            }
+
+                            if (printChar) {
+                                const encoder = new TextEncoder();
+                                const dataArray = encoder.encode(txt);
+                                // Kirim data per 256 bytes agar printer tidak buffer overflow
+                                for (let i = 0; i < dataArray.length; i += 256) {
+                                    await printChar.writeValue(dataArray.slice(i, i + 256));
+                                }
+                                showAlert('Berhasil mencetak ke ' + device.name, 'success');
+                                return;
+                            }
+                        } catch (btErr) {
+                            // Jika User membatalkan pemilihan device, abaikan error
+                            if(btErr.name !== 'NotFoundError') throw btErr;
+                            return;
+                        }
+                    }
+
+                    // Fallback untuk HP Android menggunakan aplikasi RawBT (via Intent URL)
+                    const rawbtUrl = `intent:${encodeURIComponent(txt)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
+                    window.location.href = rawbtUrl;
+                    
+                    // Notifikasi jika menggunakan iOS atau browser yang tidak mendukung keduannya
+                    setTimeout(() => {
+                        showAlert('Jika tidak terbuka, pastikan aplikasi RawBT terinstall di Android Anda, atau gunakan Chrome di PC.', 'info');
+                    }, 1000);
+                    
+                } catch (err) {
+                    console.error(err);
+                    showAlert('Gagal terhubung ke Printer: ' + err.message, 'error');
+                }
+            };
+
             return (
                 <div className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm"><div className="bg-white rounded-3xl w-full max-w-sm flex flex-col max-h-[85vh] overflow-hidden shadow-2xl">
                     <div id="receipt-content" className="p-8 overflow-y-auto font-mono text-xs text-slate-800 bg-[#fdfbf7]">
@@ -1156,7 +1348,7 @@
                     <div className="p-4 bg-slate-50 grid grid-cols-2 gap-3 border-t border-slate-200 print:hidden">
                         <button onClick={handleWA} className="py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> Kirim WA</button>
                         <button onClick={()=>window.print()} className="py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Printer" size={16}/> Simpan/Cetak</button>
-                        <button onClick={() => showAlert('Fitur Bluetooth Print (Thermal) membutuhkan instalasi/pairing aplikasi ekstensi seperti RawBT atau ESC POS print service di HP kasir.', 'info')} className="py-3 bg-slate-800 hover:bg-slate-900 text-white col-span-2 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Bluetooth" size={16}/> Print Thermal (Bluetooth)</button>
+                        <button onClick={handleBluetoothPrint} className="py-3 bg-slate-800 hover:bg-slate-900 text-white col-span-2 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Bluetooth" size={16}/> Print Thermal (Bluetooth)</button>
                         <button onClick={onClose} className="py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 col-span-2 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">Tutup Nota</button>
                     </div>
                 </div>
