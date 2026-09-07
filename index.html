@@ -241,7 +241,7 @@
                 });
 
             const timeSlots = [];
-            for (let i = 9; i <= 22; i++) {
+            for (let i = 9; i <= 23; i++) {
                 const time1 = `${i.toString().padStart(2, '0')}:00`;
                 const time2 = `${i.toString().padStart(2, '0')}:20`;
                 timeSlots.push({ time: time1, available: !bookedTimesForDate.includes(time1) });
@@ -297,7 +297,7 @@
                                `No. HP: *${customerPhone}*\n` +
                                `Layanan: *${service ? service.name : '-'}*\n` +
                                `Jadwal: *${pickupDate} Jam ${pickupTime}*\n` +
-                               `Estimasi Durasi: *15-20 Menit*\n\n` +
+                               `Estimasi Durasi: *15 - 20 Menit*\n\n` +
                                `Mohon disiapkan, terima kasih!`;
                 
                 window.open(`https://wa.me/${cleanAdminPhone}?text=${encodeURIComponent(waText)}`, '_blank');
@@ -332,7 +332,7 @@
                             <div className="relative z-10 flex flex-col items-center">
                                 <Icon name="Scissors" size={48} className="mb-4 drop-shadow-md text-emerald-200"/>
                                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-widest drop-shadow-lg mb-4">Ganteng Maksimal!</h2>
-                                <p className="text-emerald-50 text-sm md:text-base max-w-md mx-auto mb-6">Booking jadwal cukur kamu sekarang. Cek jadwal yang masih tersedia di bawah (Durasi persesi ± 15-20 menit).</p>
+                                <p className="text-emerald-50 text-sm md:text-base max-w-md mx-auto mb-6">Booking jadwal cukur kamu sekarang. Cek jadwal yang masih tersedia di bawah (Durasi per sesi ± 15-20 menit).</p>
                                 <a href="#booking" className="bg-white text-emerald-900 px-8 py-3.5 rounded-2xl font-black uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all">Booking Sekarang</a>
                             </div>
                         </div>
@@ -1221,8 +1221,8 @@
 
             return (
                 <>
-                    <div className="flex flex-row gap-4 lg:gap-6 animate-in fade-in h-[calc(100vh-160px)] lg:h-[calc(100vh-140px)] relative overflow-hidden">
-                        <div className="flex-1 overflow-y-auto pr-2 pb-36 md:pb-4 custom-scroll flex flex-col">
+                    <div className="flex flex-row gap-4 lg:gap-6 animate-in fade-in h-[calc(100vh-140px)] relative overflow-hidden">
+                        <div className="flex-1 overflow-y-auto pr-2 pb-24 md:pb-4 custom-scroll flex flex-col">
                             <h2 className="text-xl font-black text-slate-800 mb-4 uppercase tracking-tight shrink-0">Pilih Layanan</h2>
                             <div className="flex gap-2 overflow-x-auto pb-2 mb-4 shrink-0" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                                 <style>{`div::-webkit-scrollbar { display: none; }`}</style>
@@ -1620,22 +1620,13 @@
             };
 
             const handleBluetoothPrint = async () => {
+                if (isIOS && !navigator.bluetooth) {
+                    showAlert('INFO APPLE: iPhone/iPad memblokir fitur Bluetooth langsung dari Web Browser. Silakan gunakan opsi "Bagikan Teks Struk" lalu pilih aplikasi Sun Print / lainnya untuk mencetak.', 'error');
+                    return;
+                }
+
                 const txt = generateReceiptText();
 
-                // KHUSUS ANDROID: Langsung tembak ke aplikasi RawBT untuk One-Click Print
-                if (/Android/i.test(navigator.userAgent)) {
-                    const rawbtUrl = `intent:${encodeURIComponent(txt)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
-                    window.location.href = rawbtUrl;
-                    showAlert('Mengirim ke printer... Pastikan aplikasi "RawBT" sudah terinstal dari Play Store.', 'info');
-                    return;
-                }
-
-                if (isIOS) {
-                    showAlert('INFO APPLE: iOS memblokir Bluetooth web. Silakan gunakan tombol "Bagikan Teks Struk" ke aplikasi printer Anda.', 'error');
-                    return;
-                }
-
-                // Fallback untuk Desktop / PC Browser menggunakan Web Bluetooth API
                 try {
                     if (navigator.bluetooth) {
                         try {
@@ -1667,16 +1658,22 @@
                                 for (let i = 0; i < dataArray.length; i += 256) {
                                     await printChar.writeValue(dataArray.slice(i, i + 256));
                                 }
-                                showAlert('Berhasil mencetak ke ' + device.name, 'success');
+                                showAlert('Berhasil mencetak langsung ke ' + device.name, 'success');
                                 return;
                             }
                         } catch (btErr) {
                             if(btErr.name !== 'NotFoundError') throw btErr;
                             return;
                         }
-                    } else {
-                        showAlert('Browser ini tidak mendukung Web Bluetooth.', 'error');
                     }
+
+                    const rawbtUrl = `intent:${encodeURIComponent(txt)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
+                    window.location.href = rawbtUrl;
+                    
+                    setTimeout(() => {
+                        showAlert('Jika pop-up tidak muncul, pastikan Anda menggunakan Google Chrome di Android.', 'info');
+                    }, 1000);
+                    
                 } catch (err) {
                     console.error(err);
                     showAlert('Gagal terhubung ke Printer: ' + err.message, 'error');
