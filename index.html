@@ -33,6 +33,9 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -231,7 +234,11 @@
 
             const bookedTimesForDate = (transactions || [])
                 .filter(t => t && t.progressStatus !== 'Selesai' && t.pickupDate && t.pickupDate.startsWith(pickupDate))
-                .map(t => t.pickupDate.split('T')[1] ? t.pickupDate.split('T')[1].substring(0, 5) : '');
+                .map(t => {
+                    if(!t.pickupDate) return '';
+                    const dt = new Date(t.pickupDate);
+                    return dt && !isNaN(dt) ? `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}` : '';
+                });
 
             const timeSlots = [];
             for (let i = 10; i <= 22; i++) {
@@ -484,14 +491,24 @@
         }
 
         function DashboardView({ transactions, formatRupiah, settings, onSaveSettings, requestAuth, staffList, expenses, onSaveExpense, onDeleteExpense, onSaveStaff }) {
+            const getLocalYYYYMMDD = () => {
+                const d = new Date();
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            };
+
             const [inputModal, setInputModal] = useState(formatThousand(settings?.modalLaci || 0));
             const [isEditing, setIsEditing] = useState(false);
 
             const [expDesc, setExpDesc] = useState('');
             const [expAmount, setExpAmount] = useState('');
+            const [expDate, setExpDate] = useState(getLocalYYYYMMDD());
 
             const [selectedStaffForKasbon, setSelectedStaffForKasbon] = useState('');
             const [kasbonAmount, setKasbonAmount] = useState('');
+            const [kasbonDate, setKasbonDate] = useState(getLocalYYYYMMDD());
+            
+            const [editingGajiStaffCode, setEditingGajiStaffCode] = useState(null);
+            const [tempGajiValue, setTempGajiValue] = useState('');
 
             const safeTrx = transactions || [];
             const safeExpenses = expenses || [];
@@ -507,7 +524,6 @@
             
             const recentTrx = [...safeTrx].sort((a,b) => new Date(b.date || Date.now()) - new Date(a.date || Date.now())).slice(0, 5);
 
-            // Menampilkan SEMUA pelanggan (termasuk yang tidak mengisi nomor WA / tanpa nomor WA)
             const memberMap = {};
             safeTrx.forEach(t => {
                 if (t && t.customer) {
@@ -541,11 +557,12 @@
                     id: `EXP-${Date.now().toString().slice(-6)}`,
                     desc: expDesc,
                     amount: parseThousand(expAmount),
-                    date: new Date().toISOString()
+                    date: expDate ? new Date(expDate).toISOString() : new Date().toISOString()
                 };
                 onSaveExpense(newExp);
                 setExpDesc('');
                 setExpAmount('');
+                setExpDate(getLocalYYYYMMDD());
             };
 
             const handleAddKasbon = (e) => {
@@ -562,6 +579,14 @@
                 onSaveStaff(updatedStaff);
                 setSelectedStaffForKasbon('');
                 setKasbonAmount('');
+                setKasbonDate(getLocalYYYYMMDD());
+            };
+
+            const handleSaveGaji = (staff) => {
+                const newGaji = parseThousand(tempGajiValue);
+                const updatedStaff = { ...staff, gajiPokok: newGaji };
+                onSaveStaff(updatedStaff);
+                setEditingGajiStaffCode(null);
             };
 
             const handleResetKasbon = (staff) => {
@@ -657,12 +682,13 @@
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h3 className="font-black text-gray-800 flex items-center gap-2 uppercase tracking-tight text-sm"><Icon name="Users" size={20} className="text-emerald-600"/> Rekap Gaji & Kasbon Karyawan</h3>
-                            <form onSubmit={handleAddKasbon} className="flex gap-2 w-full sm:w-auto">
+                            <form onSubmit={handleAddKasbon} className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
                                 <select value={selectedStaffForKasbon} onChange={e=>setSelectedStaffForKasbon(e.target.value)} className="border-2 border-slate-200 px-3 py-2 text-xs rounded-xl outline-none font-bold bg-slate-50">
                                     <option value="" disabled>Pilih Karyawan</option>
                                     {safeStaff.map((s, idx)=>(<option key={idx} value={s.kodeKasir || s.namaKasir}>{s.namaKasir}</option>))}
                                 </select>
                                 <input type="text" value={kasbonAmount} onChange={e=>setKasbonAmount(formatThousand(e.target.value))} placeholder="Nominal Kasbon" className="border-2 border-slate-200 px-3 py-2 text-xs rounded-xl outline-none w-32 font-bold" />
+                                <input type="date" value={kasbonDate} onChange={e=>setKasbonDate(e.target.value)} className="border-2 border-slate-200 px-3 py-2 text-xs rounded-xl outline-none font-bold text-slate-700" />
                                 <button type="submit" className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0">Catat Kasbon</button>
                             </form>
                         </div>
@@ -682,10 +708,33 @@
                                         const gaji = Number(s.gajiPokok || 0);
                                         const kasbon = Number(s.kasbon || 0);
                                         const bersih = gaji - kasbon;
+                                        const isEditingGaji = editingGajiStaffCode === s.kodeKasir;
+
                                         return (
                                             <tr key={idx} className="hover:bg-slate-50 font-medium">
                                                 <td className="p-3 font-bold text-slate-800">{s.namaKasir} <span className="text-[10px] text-slate-400 font-mono">({s.kodeKasir})</span></td>
-                                                <td className="p-3">{formatRupiah(gaji)}</td>
+                                                <td className="p-3">
+                                                    {isEditingGaji ? (
+                                                        <div className="flex items-center gap-1.5">
+                                                            <input 
+                                                                type="text" 
+                                                                value={tempGajiValue} 
+                                                                onChange={e => setTempGajiValue(formatThousand(e.target.value))}
+                                                                className="w-28 px-2 py-1 border-2 border-emerald-500 rounded-lg text-xs font-bold outline-none"
+                                                                autoFocus
+                                                            />
+                                                            <button onClick={() => handleSaveGaji(s)} className="bg-emerald-600 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold">Simpan</button>
+                                                            <button onClick={() => setEditingGajiStaffCode(null)} className="bg-gray-200 text-gray-700 px-2 py-1 rounded-lg text-[10px] font-bold">Batal</button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-bold text-slate-700">{formatRupiah(gaji)}</span>
+                                                            <button onClick={() => { requestAuth(() => { setEditingGajiStaffCode(s.kodeKasir); setTempGajiValue(formatThousand(gaji)); }); }} className="text-slate-400 hover:text-emerald-700 p-1" title="Edit Gaji Pokok">
+                                                                <Icon name="Edit" size={14}/>
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </td>
                                                 <td className="p-3 text-red-600 font-bold">{formatRupiah(kasbon)}</td>
                                                 <td className="p-3 text-right font-black text-emerald-700">{formatRupiah(bersih)}</td>
                                                 <td className="p-3 text-center">
@@ -702,9 +751,10 @@
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h3 className="font-black text-gray-800 flex items-center gap-2 uppercase tracking-tight text-sm"><Icon name="DollarSign" size={20} className="text-orange-600"/> Pengeluaran & Operasional Toko</h3>
-                            <form onSubmit={handleAddExpense} className="flex gap-2 w-full sm:w-auto">
+                            <form onSubmit={handleAddExpense} className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
                                 <input type="text" value={expDesc} onChange={e=>setExpDesc(e.target.value)} placeholder="Keterangan (Cth: Beli Listrik/Air)" className="border-2 border-slate-200 px-3 py-2 text-xs rounded-xl outline-none flex-1 font-bold" />
                                 <input type="text" value={expAmount} onChange={e=>setExpAmount(formatThousand(e.target.value))} placeholder="Jumlah (Rp)" className="border-2 border-slate-200 px-3 py-2 text-xs rounded-xl outline-none w-28 font-bold" />
+                                <input type="date" value={expDate} onChange={e=>setExpDate(e.target.value)} className="border-2 border-slate-200 px-3 py-2 text-xs rounded-xl outline-none font-bold text-slate-700" />
                                 <button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0">Tambah</button>
                             </form>
                         </div>
@@ -1669,7 +1719,6 @@
                     if (savedUser) {
                         const parsed = JSON.parse(savedUser);
                         const kode = String(parsed?.kodeKasir || '').toLowerCase();
-                        // Jika bukan admin, set default ke kasir
                         if (kode !== 'admin' && !kode.includes('admin')) {
                             return 'kasir';
                         }
@@ -1850,8 +1899,6 @@
                 try { localStorage.setItem('kassqu_staff', JSON.stringify(newStaff)); } catch(e) {}
                 await callGasApi({ action: 'SAVE_STAFF', data: st });
             };
-
-            const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
             if (appMode === 'splash') {
                 return (
