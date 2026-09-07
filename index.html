@@ -67,7 +67,7 @@
             ShoppingCart: <><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></>,
             FileText: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></>,
             FileSpreadsheet: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M12 13v4"/></>,
-            Settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></>,
+            Settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></>,
             Search: <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
             Plus: <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
             Edit: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>,
@@ -162,7 +162,7 @@
                 setLoading(true);
                 try {
                     const result = await callGasApi({ action: 'VERIFY_ADMIN_PIN', pin: pin });
-                    if (result.status === 'success' && result.valid) { 
+                    if (result && result.status === 'success' && result.valid) { 
                         onConfirm();
                     } else {
                         showAlert('PIN Admin salah atau tidak valid!', 'error');
@@ -223,15 +223,14 @@
             const [selectedService, setSelectedService] = useState('');
             const [isSubmitting, setIsSubmitting] = useState(false);
             
-            // State untuk kalender
             const [currentMonth, setCurrentMonth] = useState(new Date());
 
             const bookableCats = settings?.bookableCategories || settings?.categories || [];
             const bookableProducts = products.filter(p => bookableCats.includes(p.category));
 
-            const bookedTimesForDate = transactions
-                .filter(t => t.progressStatus !== 'Selesai' && t.pickupDate && t.pickupDate.startsWith(pickupDate))
-                .map(t => t.pickupDate.split('T')[1].substring(0, 5));
+            const bookedTimesForDate = (transactions || [])
+                .filter(t => t && t.progressStatus !== 'Selesai' && t.pickupDate && t.pickupDate.startsWith(pickupDate))
+                .map(t => t.pickupDate.split('T')[1] ? t.pickupDate.split('T')[1].substring(0, 5) : '');
 
             const timeSlots = [];
             for (let i = 10; i <= 22; i++) {
@@ -241,8 +240,8 @@
                 if (i !== 22) timeSlots.push({ time: time2, available: !bookedTimesForDate.includes(time2) });
             }
 
-            const activeQueue = transactions
-                .filter(t => t.progressStatus !== 'Selesai')
+            const activeQueue = (transactions || [])
+                .filter(t => t && t.progressStatus !== 'Selesai')
                 .sort((a, b) => new Date(a.pickupDate || 0) - new Date(b.pickupDate || 0));
 
             const handleBooking = async (e) => {
@@ -258,18 +257,18 @@
                 setIsSubmitting(true);
                 const service = products.find(p => p.id == selectedService);
                 const todayStr = new Date().toISOString().split('T')[0];
-                const todayTrx = transactions.filter(t => t.date && t.date.startsWith(todayStr));
+                const todayTrx = (transactions || []).filter(t => t && t.date && t.date.startsWith(todayStr));
                 const queueNumber = todayTrx.length + 1;
                 
-                const finalPrice = (service.price || 0) - (service.discount || 0);
+                const finalPrice = service ? (service.price || 0) - (service.discount || 0) : 0;
                 const fullPickupDateTime = `${pickupDate}T${pickupTime}:00`;
                 const newTrx = {
                     id: `BKG-${Date.now().toString().slice(-6)}`,
                     customer: customerName,
                     customerPhone: customerPhone,
-                    items: [{ ...service, qty: 1 }],
-                    total: finalPrice > 0 ? finalPrice : service.price,
-                    discount: service.discount || 0,
+                    items: service ? [{ ...service, qty: 1 }] : [],
+                    total: finalPrice > 0 ? finalPrice : (service ? service.price : 0),
+                    discount: service ? (service.discount || 0) : 0,
                     status: 'Belum Lunas',
                     date: new Date().toISOString(),
                     pickupDate: fullPickupDateTime,
@@ -288,7 +287,7 @@
                                `No. Antrean: *#${queueNumber}*\n` +
                                `Nama Pelanggan: *${customerName}*\n` +
                                `No. HP: *${customerPhone}*\n` +
-                               `Layanan: *${service.name}*\n` +
+                               `Layanan: *${service ? service.name : '-'}*\n` +
                                `Jadwal: *${pickupDate} Jam ${pickupTime}*\n` +
                                `Estimasi Durasi: *30 - 45 Menit*\n\n` +
                                `Mohon disiapkan, terima kasih!`;
@@ -298,11 +297,10 @@
                 setCustomerName(''); setCustomerPhone(''); setSelectedService(''); setPickupTime('');
             };
 
-            // Logika Generator Kalender
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const firstDay = new Date(year, month, 1).getDay(); // 0 is Sunday
+            const firstDay = new Date(year, month, 1).getDay();
             const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
@@ -312,10 +310,10 @@
                         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 {settings?.logo ? <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200 overflow-hidden"><img src={settings.logo} alt="Logo" className="w-full h-full object-contain p-0.5" /></div> : <div className="w-10 h-10 bg-emerald-800 text-white rounded-full flex items-center justify-center font-bold"><Icon name="Scissors" size={20} /></div>}
-                                <h1 className="font-white text-white text-lg uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1>
+                                <h1 className="font-bold text-white text-lg uppercase tracking-tight">{settings?.storeName || 'Mas-Mas Cukur'}</h1>
                             </div>
-                            <button onClick={onGoToLogin} className="bg-emerald-800 hover:bg-emerald-700 text-emerald-800 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ">
-                                <Icon name={isLoggedIn ? "UserCircle" : "Lock"} size={14}/> {isLoggedIn ? 'Login' : 'Login Kasir'}
+                            <button onClick={onGoToLogin} className="bg-emerald-800 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-md">
+                                <Icon name={isLoggedIn ? "UserCircle" : "Lock"} size={14}/> {isLoggedIn ? 'Buka Kasir' : 'Login Kasir'}
                             </button>
                         </div>
                     </header>
@@ -364,7 +362,6 @@
                                     <div className="pt-2">
                                         <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Pilih Jadwal Booking</label>
                                         
-                                        {/* Komponen Kalender Compact */}
                                         <div className="bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl shadow-sm mb-4 select-none">
                                             <div className="flex justify-between items-center mb-4">
                                                 <button type="button" onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 bg-white border border-slate-200 shadow-sm rounded-lg hover:bg-slate-100 transition-colors active:scale-95 text-slate-600"><Icon name="ChevronLeft" size={16} /></button>
@@ -394,9 +391,8 @@
                                             </div>
                                         </div>
 
-                                        {/* Pilihan Jam */}
                                         <div className="bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl shadow-sm">
-                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2"><Icon name="Clock" size={14}/> Jam Tersedia tgl {new Date(pickupDate).getDate()} {monthNames[new Date(pickupDate).getMonth()]}</p>
+                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2"><Icon name="Clock" size={14}/> Jam Tersedia</p>
                                             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                                                 {timeSlots.map(slot => (
                                                     <button
@@ -433,7 +429,7 @@
 
                             <div className="space-y-6">
                                 <div className="bg-slate-800 rounded-3xl p-6 text-white shadow-lg">
-                                    <h3 className="text-sm font-black uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2"><Icon name="Tag" size={18}/> Layanan Utama Kami (Harga Spesial Promo)</h3>
+                                    <h3 className="text-sm font-black uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2"><Icon name="Tag" size={18}/> Layanan Utama Kami</h3>
                                     <div className="space-y-3">
                                         {bookableProducts.slice(0,4).map(p => {
                                             const effectivePrice = (p.price || 0) - (p.discount || 0);
@@ -449,15 +445,14 @@
 
                                 <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
                                     <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-2 flex items-center gap-2"><Icon name="Clock" size={18} className="text-orange-500"/> Jadwal & Antrean Aktif</h3>
-                                    <p className="text-[11px] text-slate-500 mb-4 font-medium">Periksa tanggal & jam di bawah agar tidak berbenturan dengan pelanggan lain (±35 mnt/sesi).</p>
                                     {activeQueue.length === 0 ? (
                                         <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase tracking-wider">Belum ada antrean / jadwal booking.</div>
                                     ) : (
                                         <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1 custom-scroll">
                                             {activeQueue.map(q => {
-                                                const dt = q.pickupDate ? new Date(q.pickupDate) : null;
+                                                const dt = q && q.pickupDate ? new Date(q.pickupDate) : null;
                                                 const dateStr = dt && !isNaN(dt) ? dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
-                                                const timeStr = dt && !isNaN(dt) ? dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : (q.pickupDate ? q.pickupDate.slice(11, 16) : '-');
+                                                const timeStr = dt && !isNaN(dt) ? dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : (q && q.pickupDate ? q.pickupDate.slice(11, 16) : '-');
                                                 
                                                 return (
                                                     <div key={q.id} className="flex items-center gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 shadow-sm">
@@ -467,7 +462,7 @@
                                                                 <p className="font-bold text-sm text-slate-800 truncate">{q.customer}</p>
                                                                 <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full shrink-0 ml-1">{dateStr} {timeStr}</span>
                                                             </div>
-                                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">{q.items[0]?.name || 'Layanan'}</p>
+                                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">{q.items && q.items[0] ? q.items[0].name : 'Layanan'}</p>
                                                         </div>
                                                     </div>
                                                 );
@@ -491,12 +486,13 @@
             const [inputModal, setInputModal] = useState(formatThousand(settings?.modalLaci || 0));
             const [isEditing, setIsEditing] = useState(false);
 
-            const tLunas = transactions.filter(t=>t.status==='Lunas').reduce((s,t)=>s+(t.total || 0),0); 
-            const tPiutang = transactions.filter(t=>t.status==='Belum Lunas').reduce((s,t)=>s+(t.total || 0),0);
-            const tCash = transactions.filter(t => t.status === 'Lunas' && t.paymentMethod === 'Cash').reduce((s, t) => s + (t.total || 0), 0);
+            const safeTrx = transactions || [];
+            const tLunas = safeTrx.filter(t=>t && t.status==='Lunas').reduce((s,t)=>s+(t.total || 0),0); 
+            const tPiutang = safeTrx.filter(t=>t && t.status==='Belum Lunas').reduce((s,t)=>s+(t.total || 0),0);
+            const tCash = safeTrx.filter(t => t && t.status === 'Lunas' && t.paymentMethod === 'Cash').reduce((s, t) => s + (t.total || 0), 0);
             const modalLaci = Number(settings?.modalLaci || 0);
             const totalKasLaci = modalLaci + tCash;
-            const recentTrx = [...transactions].sort((a,b) => new Date(b.date || Date.now()) - new Date(a.date || Date.now())).slice(0, 5);
+            const recentTrx = [...safeTrx].sort((a,b) => new Date(b.date || Date.now()) - new Date(a.date || Date.now())).slice(0, 5);
 
             const handleSaveModal = () => {
                 const val = parseThousand(inputModal);
@@ -511,10 +507,10 @@
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
                             <div className="bg-emerald-800 p-5 rounded-2xl text-white shadow-lg shadow-emerald-900/20">
                                 <div className="flex items-center gap-2 mb-3 opacity-90"><Icon name="FileText" size={20}/><span>Total Antrean</span></div>
-                                <p className="text-3xl font-black">{transactions.length}</p>
+                                <p className="text-3xl font-black">{safeTrx.length}</p>
                             </div>
                             <div className="bg-emerald-600 p-5 rounded-2xl text-white shadow-lg shadow-emerald-900/20">
-                                <div className="flex items-center gap-2 mb-3 opacity-90"><Icon name="CheckCircle2" size={20}/><span>Omset Hari Ini</span></div>
+                                <div className="flex items-center gap-2 mb-3 opacity-90"><Icon name="CheckCircle2" size={20}/><span>Omset Lunas</span></div>
                                 <p className="text-3xl font-black tracking-tight">{formatRupiah(tLunas)}</p>
                             </div>
                             <div className="bg-orange-600 p-5 rounded-2xl text-white shadow-lg shadow-orange-900/20">
@@ -568,7 +564,7 @@
                                         </div>
                                         <div className="text-right">
                                             <p className="font-black text-sm text-gray-800 mb-1">{formatRupiah(t.total || 0)}</p>
-                                            <p className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block ${t.progressStatus === 'Selesai' ? 'bg-emerald-50 text-emerald-600' : 'bg-emerald-50 text-emerald-600'}`}>{t.progressStatus || 'Baru Masuk'}</p>
+                                            <p className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block bg-emerald-50 text-emerald-600">{t.progressStatus || 'Baru Masuk'}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -587,7 +583,8 @@
             const catList = settings?.categories && settings.categories.length > 0 ? settings.categories : ['Potong Rambut'];
             const [name, setName] = useState(''); const [price, setPrice] = useState(''); const [costPrice, setCostPrice] = useState(''); const [discount, setDiscount] = useState(''); const [unit, setUnit] = useState('Pax'); const [category, setCategory] = useState(catList[0]); const [image, setImage] = useState(null);
             
-            const filteredProducts = products.filter(p => (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()));
+            const safeProducts = products || [];
+            const filteredProducts = safeProducts.filter(p => p && (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()));
             const handleImageUpload = async (e) => { if (e.target.files[0]) setImage(await compressImage(e.target.files[0])); };
             
             const openModal = (product = null) => {
@@ -817,19 +814,24 @@
             const [showPaymentModal, setShowPaymentModal] = useState(false);
             const [isCartMobileOpen, setIsCartMobileOpen] = useState(false); 
             const [selectedCategory, setSelectedCategory] = useState('Semua');
+            const [additionalDiscount, setAdditionalDiscount] = useState('');
 
             useEffect(() => { 
                 if (editingTrx) { 
                     setCart(editingTrx.items || []); setCustomerName(editingTrx.customer || ''); setCustomerPhone(editingTrx.customerPhone || ''); setPickupDate(editingTrx.pickupDate ? editingTrx.pickupDate.slice(0, 10) : getLocalYYYYMMDD()); setTrxId(editingTrx.id);
+                    const itemDiscSum = (editingTrx.items || []).reduce((sum, item) => sum + (item.discount || 0) * (parseFloat(item.qty) || 0), 0);
+                    const addDisc = (editingTrx.discount || 0) - itemDiscSum;
+                    setAdditionalDiscount(addDisc > 0 ? formatThousand(addDisc) : '');
                 } 
             }, [editingTrx]);
 
-            const cancelEdit = () => { setCart([]); setCustomerName(''); setCustomerPhone(''); setPickupDate(getLocalYYYYMMDD()); setTrxId(null); clearEditingTrx(); setIsCartMobileOpen(false); };
+            const cancelEdit = () => { setCart([]); setCustomerName(''); setCustomerPhone(''); setPickupDate(getLocalYYYYMMDD()); setTrxId(null); setAdditionalDiscount(''); clearEditingTrx(); setIsCartMobileOpen(false); };
             
             const categories = ['Semua', ...(settings?.categories || [])];
-            const filteredProducts = products.filter(p => {
-                const matchSearch = (p.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-                const matchCategory = selectedCategory === 'Semua' || p.category === selectedCategory;
+            const safeProducts = products || [];
+            const filteredProducts = safeProducts.filter(p => {
+                const matchSearch = p && (p.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+                const matchCategory = selectedCategory === 'Semua' || (p && p.category === selectedCategory);
                 return matchSearch && matchCategory;
             });
 
@@ -844,18 +846,21 @@
                 return sum + (unitPrice * (parseFloat(item.qty) || 0));
             }, 0);
             
-            const totalDiscount = cart.reduce((sum, item) => {
+            const totalItemDiscount = cart.reduce((sum, item) => {
                 const itemDisc = (item.discount || 0) * (parseFloat(item.qty) || 0);
                 return sum + itemDisc;
             }, 0);
 
-            const totalCart = Math.max(0, subTotal);
+            const numAdditionalDiscount = parseThousand(additionalDiscount);
+            const totalDiscount = totalItemDiscount + numAdditionalDiscount;
+
+            const totalCart = Math.max(0, subTotal - numAdditionalDiscount);
             const totalItemQty = cart.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
 
             const handleProcessPayment = (method, amountReceived, change) => {
                 const cleanCart = cart.map(i => ({...i, qty: parseFloat(i.qty) || 0})).filter(i => i.qty > 0);
                 const todayStr = new Date().toISOString().split('T')[0];
-                const todayTrx = transactions.filter(t => t.date && t.date.startsWith(todayStr));
+                const todayTrx = (transactions || []).filter(t => t && t.date && t.date.startsWith(todayStr));
                 const queueNumber = trxId && editingTrx && editingTrx.queueNumber ? editingTrx.queueNumber : (todayTrx.length + 1);
                 
                 const newTrx = { 
@@ -881,7 +886,7 @@
                 if (cart.length === 0) return;
                 const cleanCart = cart.map(i => ({...i, qty: parseFloat(i.qty) || 0})).filter(i => i.qty > 0);
                 const todayStr = new Date().toISOString().split('T')[0];
-                const todayTrx = transactions.filter(t => t.date && t.date.startsWith(todayStr));
+                const todayTrx = (transactions || []).filter(t => t && t.date && t.date.startsWith(todayStr));
                 const queueNumber = trxId && editingTrx && editingTrx.queueNumber ? editingTrx.queueNumber : (todayTrx.length + 1);
                 
                 const newTrx = { 
@@ -993,16 +998,26 @@
 
                                 <div className="p-4 md:pl-4 border-t border-slate-200 bg-white md:bg-transparent pb-[calc(20px+env(safe-area-inset-bottom))] md:pb-0 shrink-0">
                                     <div className="bg-slate-800 rounded-2xl p-4 text-white shadow-lg shadow-slate-900/20 mb-3">
-                                        <div className={`flex justify-between items-center ${totalDiscount > 0 ? 'mb-2' : 'mb-3 pb-3 border-b border-slate-600'}`}>
+                                        <div className="flex justify-between items-center mb-2">
                                             <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Subtotal</span>
-                                            <span className="font-bold">{formatRupiah(subTotal + totalDiscount)}</span>
+                                            <span className="font-bold">{formatRupiah(subTotal + totalItemDiscount)}</span>
                                         </div>
-                                        {totalDiscount > 0 && (
-                                            <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-600">
+                                        {totalItemDiscount > 0 && (
+                                            <div className="flex justify-between items-center mb-2">
                                                 <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Total Diskon Item</span>
-                                                <span className="text-emerald-400 font-bold">-{formatRupiah(totalDiscount)}</span>
+                                                <span className="text-emerald-400 font-bold">-{formatRupiah(totalItemDiscount)}</span>
                                             </div>
                                         )}
+                                        <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-600 gap-2">
+                                            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 whitespace-nowrap">Tambahan Diskon</span>
+                                            <input 
+                                                type="text" 
+                                                value={additionalDiscount} 
+                                                onChange={e => setAdditionalDiscount(formatThousand(e.target.value))}
+                                                placeholder="0"
+                                                className="w-24 px-2 py-1 bg-slate-700/50 border border-slate-500 rounded-lg text-right text-emerald-400 font-bold outline-none focus:border-emerald-400 text-sm transition-colors focus:bg-slate-700"
+                                            />
+                                        </div>
                                         <div className="flex justify-between items-end"><span className="text-sm font-bold uppercase tracking-widest text-slate-200">Total Tagihan</span><span className="text-2xl font-black">{formatRupiah(totalCart)}</span></div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3"><button onClick={handleCheckoutTunda} disabled={cart.length===0} className="py-3.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors disabled:opacity-50"><Icon name="Clock" size={16}/>Antre</button><button onClick={()=>setShowPaymentModal(true)} disabled={cart.length===0} className="py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 transition-colors disabled:opacity-50"><Icon name="Wallet" size={16}/>Bayar</button></div>
@@ -1024,7 +1039,9 @@
             
             const today = new Date(); today.setHours(0, 0, 0, 0);
 
-            const filteredTrx = transactions.filter(t => {
+            const safeTrx = transactions || [];
+            const filteredTrx = safeTrx.filter(t => {
+                if (!t) return false;
                 const matchSearch = (t.id || '').toLowerCase().includes(searchQuery.toLowerCase()) || (t.customer || '').toLowerCase().includes(searchQuery.toLowerCase());
                 if (!matchSearch) return false;
                 const d = t.date ? new Date(t.date) : new Date(); 
@@ -1249,18 +1266,18 @@
                 txt += line;
                 
                 (data.items || []).forEach(i => {
-                    txt += `${i.name.toUpperCase()}\n`;
+                    txt += `${(i.name || '').toUpperCase()}\n`;
                     const qtyPrice = `${i.qty}x @${i.price}`;
-                    const total = `${i.qty * i.price}`;
+                    const total = `${(i.qty || 0) * (i.price || 0)}`;
                     txt += `${pad(qtyPrice, 20)}${padLeft(total, 12)}\n`;
                 });
                 
                 txt += line;
                 if (data.discount > 0) {
-                    txt += `${pad('SUBTOTAL', 20)}${padLeft(''+(data.total + data.discount), 12)}\n`;
+                    txt += `${pad('SUBTOTAL', 20)}${padLeft(''+((data.total || 0) + (data.discount || 0)), 12)}\n`;
                     txt += `${pad('DISKON', 20)}${padLeft('-'+data.discount, 12)}\n`;
                 }
-                txt += `${pad('TOTAL', 20)}${padLeft(''+data.total, 12)}\n`;
+                txt += `${pad('TOTAL', 20)}${padLeft(''+(data.total || 0), 12)}\n`;
                 txt += line;
                 txt += `STATUS  : ${data.status} ${data.paymentMethod && data.paymentMethod !== '-' ? `(${data.paymentMethod})` : ''}\n`;
                 if (data.status === 'Lunas' && data.amountReceived > 0) {
@@ -1297,12 +1314,11 @@
                 const txt = generateReceiptText();
 
                 try {
-                    // Cek ketersediaan Web Bluetooth API (Google Chrome Android / PC)
                     if (navigator.bluetooth) {
                         try {
                             const device = await navigator.bluetooth.requestDevice({
                                 acceptAllDevices: true,
-                                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', '00001101-0000-1000-8000-00805f9b34fb'] // UUID umum printer thermal RPP02N dkk
+                                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', '00001101-0000-1000-8000-00805f9b34fb']
                             });
                             
                             const server = await device.gatt.connect();
@@ -1320,13 +1336,11 @@
                             }
 
                             if (printChar) {
-                                // Kirim perintah inisialisasi ESC/POS (Reset printer agar format tidak ngaco)
                                 const initCmd = new Uint8Array([0x1B, 0x40]);
                                 await printChar.writeValue(initCmd);
 
                                 const encoder = new TextEncoder();
                                 const dataArray = encoder.encode(txt);
-                                // Kirim data per 256 bytes agar printer tidak buffer overflow/lag
                                 for (let i = 0; i < dataArray.length; i += 256) {
                                     await printChar.writeValue(dataArray.slice(i, i + 256));
                                 }
@@ -1334,13 +1348,11 @@
                                 return;
                             }
                         } catch (btErr) {
-                            // Abaikan error jika user klik "Cancel" pada menu popup bluetooth
                             if(btErr.name !== 'NotFoundError') throw btErr;
                             return;
                         }
                     }
 
-                    // Fallback untuk Android versi lama atau browser yang tidak ada Web Bluetooth
                     const rawbtUrl = `intent:${encodeURIComponent(txt)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
                     window.location.href = rawbtUrl;
                     
@@ -1366,7 +1378,7 @@
                         </div>
                         <div className="space-y-3 mb-4">{(data.items || []).map((i,x)=><div key={x}><div className="font-bold uppercase">{i.name}</div><div className="flex justify-between text-slate-600 mt-0.5"><span>{i.qty}x @ {formatRupiah(i.price)}</span><span>{formatRupiah(i.price*i.qty)}</span></div></div>)}</div>
                         <div className="border-t-2 border-dashed border-slate-300 pt-3 space-y-1.5">
-                            <div className="flex justify-between font-medium"><span>Subtotal</span><span>{formatRupiah(data.total + (data.discount || 0))}</span></div>
+                            <div className="flex justify-between font-medium"><span>Subtotal</span><span>{formatRupiah((data.total || 0) + (data.discount || 0))}</span></div>
                             {data.discount > 0 && <div className="flex justify-between font-medium"><span>Diskon</span><span>-{formatRupiah(data.discount)}</span></div>}
                             <div className="flex justify-between font-black text-base mt-2 pt-2 border-t border-slate-200"><span>TOTAL</span><span>{formatRupiah(data.total || 0)}</span></div>
                             <div className="flex justify-between mt-4"><span>Status:</span><span className={`font-black uppercase ${data.status === 'Lunas' ? '' : 'text-slate-500'}`}>{data.status || '-'} {data.paymentMethod && data.status === 'Lunas' ? `(${data.paymentMethod})` : ''}</span></div>
@@ -1393,22 +1405,58 @@
             return (<button onClick={onClick} className={`flex flex-col items-center justify-center w-16 transition-colors ${isActive ? 'text-emerald-700' : 'text-slate-400 hover:text-slate-600'}`}><div className={`transition-transform ${isActive ? 'scale-110 mb-1' : 'scale-100 mb-0'}`}>{icon}</div><span className={`text-[10px] font-black uppercase tracking-wider transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 h-0'}`}>{label}</span></button>);
         }
 
+        class ErrorBoundary extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = { hasError: false, error: null };
+            }
+            static getDerivedStateFromError(error) {
+                return { hasError: true, error };
+            }
+            componentDidCatch(error, errorInfo) {
+                console.error("ErrorBoundary caught an error", error, errorInfo);
+            }
+            render() {
+                if (this.state.hasError) {
+                    return (
+                        <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center">
+                            <div className="w-20 h-20 bg-red-500/20 border-2 border-red-500 rounded-full flex items-center justify-center text-red-500 mb-4">
+                                <Icon name="XCircle" size={40} />
+                            </div>
+                            <h2 className="text-2xl font-black mb-2">Terjadi Kesalahan Aplikasi</h2>
+                            <p className="text-sm text-slate-400 max-w-md mb-6">{this.state.error && this.state.error.toString()}</p>
+                            <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold uppercase tracking-wider shadow-lg">Reset & Muat Ulang</button>
+                        </div>
+                    );
+                }
+                return this.props.children;
+            }
+        }
+
         function App() {
             const [appMode, setAppMode] = useState('splash');
             const [isDbLoading, setIsDbLoading] = useState(false);
             
-            const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('kassqu_user') !== null);
-            const [currentUser, setCurrentUser] = useState(() => {
-                const saved = localStorage.getItem('kassqu_user');
-                return saved ? JSON.parse(saved) : null;
+            const [isLoggedIn, setIsLoggedIn] = useState(() => {
+                try { return localStorage.getItem('kassqu_user') !== null; } catch(e) { return false; }
             });
-            const [activeTab, setActiveTab] = useState(() => localStorage.getItem('kassqu_tab') || 'dashboard');
+            const [currentUser, setCurrentUser] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('kassqu_user');
+                    return saved ? JSON.parse(saved) : null;
+                } catch(e) { return null; }
+            });
+            const [activeTab, setActiveTab] = useState(() => {
+                try { return localStorage.getItem('kassqu_tab') || 'dashboard'; } catch(e) { return 'dashboard'; }
+            });
             
             const [searchQuery, setSearchQuery] = useState('');
             
             const [settings, setSettings] = useState(() => {
-                const saved = localStorage.getItem('kassqu_settings');
-                return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
+                try {
+                    const saved = localStorage.getItem('kassqu_settings');
+                    return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
+                } catch(e) { return INITIAL_SETTINGS; }
             });
 
             const [products, setProducts] = useState(INITIAL_PRODUCTS);
@@ -1423,35 +1471,48 @@
             const [appAlert, setAppAlert] = useState(null); 
             const showAlert = (message, type = 'error') => { setAppAlert({ message, type }); };
 
-            useEffect(() => { localStorage.setItem('kassqu_tab', activeTab); }, [activeTab]);
+            useEffect(() => { 
+                try { localStorage.setItem('kassqu_tab', activeTab); } catch(e) {} 
+            }, [activeTab]);
 
             useEffect(() => {
                 let isMounted = true;
                 const fetchInitialData = async () => {
-                    const result = await callGasApi({ action: 'GET_DATA' });
-                    if (result.status === 'success' && isMounted) {
-                        if (result.data.settings && Object.keys(result.data.settings).length > 0) {
-                            setSettings(result.data.settings);
-                            localStorage.setItem('kassqu_settings', JSON.stringify(result.data.settings));
+                    try {
+                        const result = await callGasApi({ action: 'GET_DATA' });
+                        if (result && result.status === 'success' && isMounted) {
+                            if (result.data && result.data.settings && Object.keys(result.data.settings).length > 0) {
+                                setSettings(result.data.settings);
+                                try { localStorage.setItem('kassqu_settings', JSON.stringify(result.data.settings)); } catch(e) {}
+                            }
+                            if (result.data && result.data.products && result.data.products.length > 0) setProducts(result.data.products);
+                            if (result.data && result.data.transactions) setTransactions(result.data.transactions);
+                        } else {
+                            const localTrx = localStorage.getItem('kassqu_transactions');
+                            if (localTrx) setTransactions(JSON.parse(localTrx));
                         }
-                        if (result.data.products && result.data.products.length > 0) setProducts(result.data.products);
-                        if (result.data.transactions) setTransactions(result.data.transactions);
-                    } else {
-                        const localTrx = localStorage.getItem('kassqu_transactions');
-                        if (localTrx) setTransactions(JSON.parse(localTrx));
+                    } catch (err) {
+                        console.warn('Init data fallback:', err);
                     }
                 };
 
                 fetchInitialData();
 
-                setTimeout(() => {
+                const timer = setTimeout(() => {
                     if (isMounted) {
-                        const savedUser = localStorage.getItem('kassqu_user');
-                        setAppMode(savedUser ? 'cashier' : 'landing');
+                        try {
+                            const savedUser = localStorage.getItem('kassqu_user');
+                            setAppMode(savedUser ? 'cashier' : 'landing');
+                        } catch(e) {
+                            setAppMode('landing');
+                        }
                     }
-                }, 1500);
+                }, 1200);
                 
-                return () => { isMounted = false; };
+                return () => { 
+                    isMounted = false; 
+                    clearTimeout(timer);
+                };
             }, []);
 
             const handleLogin = async (e) => {
@@ -1463,15 +1524,19 @@
                 const user = formData.get('username');
                 const pass = formData.get('password');
 
-                const result = await callGasApi({ action: 'VERIFY_LOGIN', username: user, password: pass });
-                
-                if (result.status === 'success') {
-                    setCurrentUser(result.user);
-                    localStorage.setItem('kassqu_user', JSON.stringify(result.user));
-                    setIsLoggedIn(true); 
-                    setAppMode('cashier');
-                } else {
-                    setLoginError(result.message || 'Username/Password salah!');
+                try {
+                    const result = await callGasApi({ action: 'VERIFY_LOGIN', username: user, password: pass });
+                    
+                    if (result && result.status === 'success') {
+                        setCurrentUser(result.user);
+                        try { localStorage.setItem('kassqu_user', JSON.stringify(result.user)); } catch(e) {}
+                        setIsLoggedIn(true); 
+                        setAppMode('cashier');
+                    } else {
+                        setLoginError(result && result.message ? result.message : 'Username/PIN salah!');
+                    }
+                } catch (err) {
+                    setLoginError('Gagal koneksi ke server.');
                 }
                 setIsDbLoading(false);
             };
@@ -1488,7 +1553,7 @@
 
             const updateSettingsDb = async (newData) => { 
                 setSettings(newData);
-                localStorage.setItem('kassqu_settings', JSON.stringify(newData)); 
+                try { localStorage.setItem('kassqu_settings', JSON.stringify(newData)); } catch(e) {}
                 await callGasApi({ action: 'SAVE_SETTINGS', data: newData });
             };
             const saveProductDb = async (prod) => {
@@ -1503,15 +1568,13 @@
             const saveTransactionDb = async (trx) => {
                 const newTrxs = transactions.find(t => t.id === trx.id) ? transactions.map(t => t.id === trx.id ? trx : t) : [...transactions, trx];
                 setTransactions(newTrxs); 
-                localStorage.setItem('kassqu_transactions', JSON.stringify(newTrxs));
+                try { localStorage.setItem('kassqu_transactions', JSON.stringify(newTrxs)); } catch(e) {}
                 await callGasApi({ action: 'SAVE_TRANSACTION', data: trx });
             };
             const deleteTransactionDb = async (id) => { 
                 setTransactions(transactions.filter(t => t.id !== id)); 
                 try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'DELETE_TRANSACTION', id: id }) }); } catch (e) { console.error(e); }
             };
-
-            const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
             if (appMode === 'splash') {
                 return (
@@ -1548,8 +1611,8 @@
                             </div>
                             {loginError && <div className="mb-4 p-3 bg-red-100/90 text-red-700 rounded-lg text-sm font-bold flex justify-center text-center gap-2 border border-red-200"><Icon name="XCircle" size={16} className="shrink-0 mt-0.5" /> <span>{loginError}</span></div>}
                             <form onSubmit={handleLogin} className="space-y-4">
-                                <input type="text" name="username" placeholder="Username" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
-                                <input type="password" name="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
+                                <input type="text" name="username" placeholder="Username / PIN Kasir" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
+                                <input type="password" name="password" placeholder="PIN / Password" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
                                 <button type="submit" disabled={isDbLoading} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-lg border border-emerald-500/50 hover:shadow-emerald-500/50 transition-all">{isDbLoading ? 'Memproses...' : 'Login Kasir'}</button>
                             </form>
                         </div>
@@ -1573,7 +1636,7 @@
                                 <button onClick={() => setAppMode('landing')} className="text-emerald-100 hover:bg-emerald-700 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-emerald-700/50 rounded-lg border border-emerald-600" title="Lihat Homepage Publik">
                                     <Icon name="Home" size={18} /> <span className="hidden sm:inline">Homepage</span>
                                 </button>
-                                <button onClick={() => { setAppMode('landing'); setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); setActiveTab('dashboard'); }} className="text-emerald-100 hover:bg-red-600 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-white/10 rounded-lg" title="Keluar">
+                                <button onClick={() => { setAppMode('landing'); setIsLoggedIn(false); setCurrentUser(null); try { localStorage.removeItem('kassqu_user'); localStorage.removeItem('kassqu_tab'); } catch(e){} setActiveTab('dashboard'); }} className="text-emerald-100 hover:bg-red-600 transition-colors p-2 flex items-center gap-1.5 text-sm font-bold bg-white/10 rounded-lg" title="Keluar">
                                     <Icon name="LogOut" size={18} /> <span className="hidden sm:inline">Keluar</span>
                                 </button>
                             </div>
@@ -1619,7 +1682,11 @@
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(
+            <ErrorBoundary>
+                <App />
+            </ErrorBoundary>
+        );
     </script>
 </body>
 </html>
