@@ -1220,6 +1220,8 @@
         }
 
         function ReceiptModal({ data, settings, onClose, formatRupiah, showAlert }) {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
             const handleWA = () => { 
                 if (!data.customerPhone || data.customerPhone === '-' || data.customerPhone.trim() === '') {
                     showAlert('Nomor WhatsApp pelanggan tidak diisi/tidak valid saat transaksi.', 'error');
@@ -1229,8 +1231,7 @@
                 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Halo *${data.customer || 'Pelanggan'}*,\nBerikut rincian pesanan dari *${settings?.storeName || 'Barbershop'}*:\n\nNo. Antrean: *${data.queueNumber || '-'}*\nID Ref: *${data.id}*\nTotal Tagihan: *${formatRupiah(data.total || 0)}*\nStatus: *${data.status || '-'} ${data.paymentMethod && data.paymentMethod !== '-' ? `(${data.paymentMethod})` : ''}*\nProses: *${data.progressStatus || 'Baru Masuk'}*\nJadwal Booking: *${data.pickupDate ? new Date(data.pickupDate).toLocaleDateString('id-ID') : '-'}*\n\n_${settings?.receiptFooter || '*** TERIMA KASIH ***'}_`)}`,'_blank'); 
             };
 
-            const handleBluetoothPrint = async () => {
-                // Formatting Struk untuk dicetak di Printer Thermal
+            const generateReceiptText = () => {
                 const pad = (str, len) => (str || '').padEnd(len, ' ').substring(0, len);
                 const padLeft = (str, len) => (str || '').padStart(len, ' ').substring(0, len);
                 const line = '-'.repeat(32) + '\n';
@@ -1268,14 +1269,40 @@
                 }
                 txt += line;
                 txt += (settings?.receiptFooter || 'TERIMA KASIH').replace(/\\n/g, '\n') + '\n\n\n\n';
+                return txt;
+            };
+
+            const handleShare = async () => {
+                const txt = generateReceiptText();
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: `Struk - ${data.id}`,
+                            text: txt
+                        });
+                    } catch (err) {
+                        console.log('Share dibatalkan', err);
+                    }
+                } else {
+                    showAlert('Fitur Share tidak didukung di browser ini.', 'error');
+                }
+            };
+
+            const handleBluetoothPrint = async () => {
+                if (isIOS && !navigator.bluetooth) {
+                    showAlert('INFO APPLE: iPhone/iPad memblokir fitur Bluetooth langsung dari Web Browser. Silakan gunakan opsi "Bagikan Teks Struk" lalu pilih aplikasi Sun Print / lainnya untuk mencetak.', 'error');
+                    return;
+                }
+
+                const txt = generateReceiptText();
 
                 try {
-                    // Cek ketersediaan Web Bluetooth API (Google Chrome)
+                    // Cek ketersediaan Web Bluetooth API (Google Chrome Android / PC)
                     if (navigator.bluetooth) {
                         try {
                             const device = await navigator.bluetooth.requestDevice({
                                 acceptAllDevices: true,
-                                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2'] // UUID umum printer thermal
+                                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', '00001101-0000-1000-8000-00805f9b34fb'] // UUID umum printer thermal RPP02N dkk
                             });
                             
                             const server = await device.gatt.connect();
@@ -1293,29 +1320,32 @@
                             }
 
                             if (printChar) {
+                                // Kirim perintah inisialisasi ESC/POS (Reset printer agar format tidak ngaco)
+                                const initCmd = new Uint8Array([0x1B, 0x40]);
+                                await printChar.writeValue(initCmd);
+
                                 const encoder = new TextEncoder();
                                 const dataArray = encoder.encode(txt);
-                                // Kirim data per 256 bytes agar printer tidak buffer overflow
+                                // Kirim data per 256 bytes agar printer tidak buffer overflow/lag
                                 for (let i = 0; i < dataArray.length; i += 256) {
                                     await printChar.writeValue(dataArray.slice(i, i + 256));
                                 }
-                                showAlert('Berhasil mencetak ke ' + device.name, 'success');
+                                showAlert('Berhasil mencetak langsung ke ' + device.name, 'success');
                                 return;
                             }
                         } catch (btErr) {
-                            // Jika User membatalkan pemilihan device, abaikan error
+                            // Abaikan error jika user klik "Cancel" pada menu popup bluetooth
                             if(btErr.name !== 'NotFoundError') throw btErr;
                             return;
                         }
                     }
 
-                    // Fallback untuk HP Android menggunakan aplikasi RawBT (via Intent URL)
+                    // Fallback untuk Android versi lama atau browser yang tidak ada Web Bluetooth
                     const rawbtUrl = `intent:${encodeURIComponent(txt)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
                     window.location.href = rawbtUrl;
                     
-                    // Notifikasi jika menggunakan iOS atau browser yang tidak mendukung keduannya
                     setTimeout(() => {
-                        showAlert('Jika tidak terbuka, pastikan aplikasi RawBT terinstall di Android Anda, atau gunakan Chrome di PC.', 'info');
+                        showAlert('Jika pop-up tidak muncul, pastikan Anda menggunakan Google Chrome di Android.', 'info');
                     }, 1000);
                     
                 } catch (err) {
@@ -1325,8 +1355,8 @@
             };
 
             return (
-                <div className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm"><div className="bg-white rounded-3xl w-full max-w-sm flex flex-col max-h-[85vh] overflow-hidden shadow-2xl">
-                    <div id="receipt-content" className="p-8 overflow-y-auto font-mono text-xs text-slate-800 bg-[#fdfbf7]">
+                <div className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm"><div className="bg-white rounded-3xl w-full max-w-sm flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
+                    <div id="receipt-content" className="p-8 overflow-y-auto font-mono text-xs text-slate-800 bg-[#fdfbf7] custom-scroll">
                         <div className="text-center mb-6">{settings?.logo&&<img src={settings.logo} className="w-16 h-16 mx-auto mb-2 object-contain bg-white rounded-full p-1 border border-dashed border-slate-300" />}<h2 className="font-black text-lg uppercase tracking-widest">{settings?.storeName || 'Barbershop'}</h2><p className="text-[10px] mt-1">{settings?.address || ''}</p><p className="text-[10px]">{settings?.phone || ''}</p></div>
                         <div className="border-y-2 border-dashed border-slate-300 py-3 mb-4 space-y-1.5">
                             <div className="flex justify-between items-center"><span className="text-sm font-black bg-slate-800 text-white px-2 py-0.5 rounded">ANTREAN: {data.queueNumber || '-'}</span><span className="text-[10px] text-slate-500">{data.id}</span></div>
@@ -1345,10 +1375,13 @@
                         <div className="text-center mt-8 text-slate-600 font-bold whitespace-pre-wrap">{settings?.receiptFooter || '*** TERIMA KASIH ***'}</div>
                     </div>
                     
-                    <div className="p-4 bg-slate-50 grid grid-cols-2 gap-3 border-t border-slate-200 print:hidden">
+                    <div className="p-4 bg-slate-50 grid grid-cols-2 gap-3 border-t border-slate-200 print:hidden shrink-0">
                         <button onClick={handleWA} className="py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> Kirim WA</button>
-                        <button onClick={()=>window.print()} className="py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Printer" size={16}/> Simpan/Cetak</button>
+                        <button onClick={()=>window.print()} className="py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Printer" size={16}/> Cetak PDF</button>
                         <button onClick={handleBluetoothPrint} className="py-3 bg-slate-800 hover:bg-slate-900 text-white col-span-2 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Bluetooth" size={16}/> Print Thermal (Bluetooth)</button>
+                        {isIOS && (
+                            <button onClick={handleShare} className="py-3 bg-blue-600 hover:bg-blue-700 text-white col-span-2 rounded-xl font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="FileText" size={16}/> Bagikan Teks Struk (Khusus iOS)</button>
+                        )}
                         <button onClick={onClose} className="py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 col-span-2 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">Tutup Nota</button>
                     </div>
                 </div>
