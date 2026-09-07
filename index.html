@@ -1726,7 +1726,7 @@
             };
 
             return (
-                <div className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm"><div className="bg-white rounded-3xl w-full max-w-sm flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
+                <div id="receipt-modal-wrapper" className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm"><div id="receipt-modal-container" className="bg-white rounded-3xl w-full max-w-sm flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
                     <div id="receipt-content" className="p-8 overflow-y-auto font-mono text-xs text-slate-800 bg-[#fdfbf7] custom-scroll">
                         <div className="text-center mb-6">{settings?.logo&&<img src={settings.logo} className="w-16 h-16 mx-auto mb-2 object-contain bg-white rounded-full p-1 border border-dashed border-slate-300" />}<h2 className="font-black text-lg uppercase tracking-widest">{settings?.storeName || 'Barbershop'}</h2><p className="text-[10px] mt-1">{settings?.address || ''}</p><p className="text-[10px]">{settings?.phone || ''}</p></div>
                         <div className="border-y-2 border-dashed border-slate-300 py-3 mb-4 space-y-1.5">
@@ -1757,7 +1757,22 @@
                         <button onClick={onClose} className="py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 col-span-2 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">Tutup Nota</button>
                     </div>
                 </div>
-                <style dangerouslySetInnerHTML={{__html: `@media print { body * { visibility: hidden; } #receipt-content, #receipt-content * { visibility: visible; } #receipt-content { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; background: white; } }`}} /></div>
+                <style dangerouslySetInnerHTML={{__html: `
+                    @media print { 
+                        @page { margin: 0; }
+                        body, html { background: white !important; margin: 0; padding: 0; height: auto !important; }
+                        /* Hapus semua space belakang / elemen yg tidak diprint */
+                        header, main, nav { display: none !important; }
+                        #root > div { min-height: auto !important; }
+                        
+                        /* Reset styling overlay modal */
+                        #receipt-modal-wrapper { position: absolute; top: 0; left: 0; right: 0; background: white !important; padding: 0 !important; align-items: flex-start; justify-content: flex-start; }
+                        #receipt-modal-container { max-height: none !important; max-width: 100% !important; border-radius: 0 !important; box-shadow: none !important; }
+                        
+                        /* Posisikan konten struk */
+                        #receipt-content { padding: 5mm !important; overflow: visible !important; }
+                    }
+                `}} /></div>
             );
         }
 
