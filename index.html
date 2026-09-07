@@ -496,6 +496,11 @@
                 return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             };
 
+            const [filterPreset, setFilterPreset] = useState('semua');
+            const [startDate, setStartDate] = useState('');
+            const [endDate, setEndDate] = useState('');
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+
             const [inputModal, setInputModal] = useState(formatThousand(settings?.modalLaci || 0));
             const [isEditing, setIsEditing] = useState(false);
 
@@ -514,21 +519,44 @@
             const safeExpenses = expenses || [];
             const safeStaff = staffList || [];
 
-            const tLunas = safeTrx.filter(t=>t && t.status==='Lunas').reduce((s,t)=>s+(t.total || 0),0); 
-            const tPiutang = safeTrx.filter(t=>t && t.status==='Belum Lunas').reduce((s,t)=>s+(t.total || 0),0);
-            const tCash = safeTrx.filter(t => t && t.status === 'Lunas' && t.paymentMethod === 'Cash').reduce((s, t) => s + (t.total || 0), 0);
+            const filteredTrx = safeTrx.filter(t => {
+                if (!t) return false;
+                const d = t.date ? new Date(t.date) : new Date();
+                if (filterPreset === 'hari-ini') { const dDate = new Date(d); dDate.setHours(0, 0, 0, 0); return dDate.getTime() === today.getTime(); }
+                else if (filterPreset === 'mingguan') { const lastWeek = new Date(today); lastWeek.setDate(today.getDate() - 7); return d >= lastWeek; }
+                else if (filterPreset === 'bulanan') { const lastMonth = new Date(today); lastMonth.setDate(today.getDate() - 30); return d >= lastMonth; }
+                else if (filterPreset === 'kalender') { if (startDate && d < new Date(startDate)) return false; if (endDate && d > new Date(endDate+"T23:59:59")) return false; return true; }
+                return true;
+            });
+
+            const filteredExpenses = safeExpenses.filter(e => {
+                if (!e) return false;
+                const d = e.date ? new Date(e.date) : new Date();
+                if (filterPreset === 'hari-ini') { const dDate = new Date(d); dDate.setHours(0, 0, 0, 0); return dDate.getTime() === today.getTime(); }
+                else if (filterPreset === 'mingguan') { const lastWeek = new Date(today); lastWeek.setDate(today.getDate() - 7); return d >= lastWeek; }
+                else if (filterPreset === 'bulanan') { const lastMonth = new Date(today); lastMonth.setDate(today.getDate() - 30); return d >= lastMonth; }
+                else if (filterPreset === 'kalender') { if (startDate && d < new Date(startDate)) return false; if (endDate && d > new Date(endDate+"T23:59:59")) return false; return true; }
+                return true;
+            });
+
+            const tLunas = filteredTrx.filter(t=>t && t.status==='Lunas').reduce((s,t)=>s+(t.total || 0),0); 
+            const tPiutang = filteredTrx.filter(t=>t && t.status==='Belum Lunas').reduce((s,t)=>s+(t.total || 0),0);
+            const tCash = filteredTrx.filter(t => t && t.status === 'Lunas' && t.paymentMethod === 'Cash').reduce((s, t) => s + (t.total || 0), 0);
+            const tQris = filteredTrx.filter(t => t && t.status === 'Lunas' && t.paymentMethod === 'QRIS').reduce((s, t) => s + (t.total || 0), 0);
+            const tTransfer = filteredTrx.filter(t => t && t.status === 'Lunas' && (t.paymentMethod === 'Transfer' || t.paymentMethod === 'TF')).reduce((s, t) => s + (t.total || 0), 0);
             
-            const totalExpenseAmount = safeExpenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+            const totalExpenseAmount = filteredExpenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
             const modalLaci = Number(settings?.modalLaci || 0);
             const totalKasLaci = modalLaci + tCash - totalExpenseAmount;
             
-            const recentTrx = [...safeTrx].sort((a,b) => new Date(b.date || Date.now()) - new Date(a.date || Date.now())).slice(0, 5);
+            const recentTrx = [...filteredTrx].sort((a,b) => new Date(b.date || Date.now()) - new Date(a.date || Date.now())).slice(0, 5);
 
             const memberMap = {};
-            safeTrx.forEach(t => {
+            safeTrx.forEach(t => { 
                 if (t && t.customer) {
-                    const custKey = (t.customer || 'Pelanggan').trim().toLowerCase();
-                    const phoneVal = t.customerPhone && t.customerPhone.trim() !== '' && t.customerPhone !== '-' ? t.customerPhone.trim() : '-';
+                    const custKey = String(t.customer || 'Pelanggan').trim().toLowerCase();
+                    const rawPhone = t.customerPhone != null ? String(t.customerPhone).trim() : '-';
+                    const phoneVal = rawPhone !== '' ? rawPhone : '-';
                     
                     if (!memberMap[custKey]) {
                         memberMap[custKey] = { name: t.customer || 'Pelanggan', phone: phoneVal, visits: 0, lastVisit: t.date };
@@ -597,16 +625,18 @@
             };
 
             const exportDashboardExcel = () => {
-                let csv = '=== LAPORAN DASHBOARD & KEUANGAN ===\n';
+                let csv = `=== LAPORAN DASHBOARD & KEUANGAN (${filterPreset.toUpperCase()}) ===\n`;
                 csv += `Total Omset Lunas;${tLunas}\n`;
                 csv += `Total Piutang;${tPiutang}\n`;
                 csv += `Modal Awal Laci;${modalLaci}\n`;
-                csv += `Penjualan Tunai;${tCash}\n`;
+                csv += `Penjualan Tunai (CASH);${tCash}\n`;
+                csv += `Penjualan QRIS;${tQris}\n`;
+                csv += `Penjualan Transfer (TF);${tTransfer}\n`;
                 csv += `Total Pengeluaran Toko;${totalExpenseAmount}\n`;
-                csv += `Kas Akhir Laci;${totalKasLaci}\n\n`;
+                csv += `Kas Akhir Laci (Fisik);${totalKasLaci}\n\n`;
 
                 csv += '=== PENGELUARAN TOKO ===\nID;Keterangan;Jumlah;Tanggal\n';
-                safeExpenses.forEach(ex => {
+                filteredExpenses.forEach(ex => {
                     csv += `${ex.id};"${ex.desc}";${ex.amount};${new Date(ex.date).toLocaleDateString('id-ID')}\n`;
                 });
 
@@ -623,7 +653,7 @@
                 const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a");
                 link.href = URL.createObjectURL(blob);
-                link.download = `Dashboard_Summary_${new Date().toISOString().split('T')[0]}.csv`;
+                link.download = `Dashboard_Summary_${filterPreset}_${new Date().toISOString().split('T')[0]}.csv`;
                 link.style.visibility = 'hidden';
                 document.body.appendChild(link);
                 link.click();
@@ -632,17 +662,30 @@
 
             return (
                 <div className="space-y-6 animate-in fade-in">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                         <h2 className="text-xl font-black text-gray-800 uppercase tracking-tight">Dashboard Overview</h2>
-                        <button onClick={exportDashboardExcel} className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md transition-colors">
-                            <Icon name="FileSpreadsheet" size={16}/> Unduh Excel (CSV)
-                        </button>
+                        
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto">
+                            <select value={filterPreset} onChange={e => { setFilterPreset(e.target.value); if(e.target.value !== 'kalender') { setStartDate(''); setEndDate(''); } }} className="border-2 border-slate-200 rounded-xl px-3 py-2 outline-none bg-white font-bold text-slate-800 focus:border-emerald-500 text-xs w-full sm:w-auto">
+                                <option value="semua">Semua Waktu</option><option value="hari-ini">Hari Ini</option><option value="mingguan">Mingguan (7 Hari)</option><option value="bulanan">Bulanan (30 Hari)</option><option value="kalender">Pilih Tanggal</option>
+                            </select>
+                            <button onClick={exportDashboardExcel} className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-colors w-full sm:w-auto shrink-0">
+                                <Icon name="FileSpreadsheet" size={16}/> Unduh Excel (CSV)
+                            </button>
+                        </div>
                     </div>
+                    {filterPreset === 'kalender' && (
+                        <div className="flex gap-3 items-center mb-4 bg-white p-3 rounded-xl border border-slate-200 shadow-sm animate-in fade-in slide-in-from-top-2 text-sm w-full sm:w-fit">
+                            <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} className="border-2 border-slate-200 rounded-xl px-3 py-1.5 outline-none text-slate-800 flex-1 font-bold focus:border-emerald-500" />
+                            <span className="text-slate-400 font-bold">-</span>
+                            <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} className="border-2 border-slate-200 rounded-xl px-3 py-1.5 outline-none text-slate-800 flex-1 font-bold focus:border-emerald-500" />
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                         <div className="bg-emerald-800 p-5 rounded-2xl text-white shadow-lg shadow-emerald-900/20">
                             <div className="flex items-center gap-2 mb-3 opacity-90"><Icon name="FileText" size={20}/><span>Total Antrean</span></div>
-                            <p className="text-3xl font-black">{safeTrx.length}</p>
+                            <p className="text-3xl font-black">{filteredTrx.length}</p>
                         </div>
                         <div className="bg-emerald-600 p-5 rounded-2xl text-white shadow-lg shadow-emerald-900/20">
                             <div className="flex items-center gap-2 mb-3 opacity-90"><Icon name="CheckCircle2" size={20}/><span>Omset Lunas</span></div>
@@ -661,12 +704,13 @@
                     <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-700 shrink-0"><Icon name="Wallet" size={24}/></div>
-                            <div>
-                                <h4 className="font-bold text-gray-800 text-sm">Rekapitulasi Kas Laci</h4>
-                                <p className="text-xs text-gray-500 mt-1">Modal: <span className="font-bold text-gray-700">{formatRupiah(modalLaci)}</span> | Tunai: <span className="font-bold text-gray-700">{formatRupiah(tCash)}</span> | Keluar Toko: <span className="font-bold text-red-600">-{formatRupiah(totalExpenseAmount)}</span></p>
+                            <div className="space-y-1.5">
+                                <h4 className="font-bold text-gray-800 text-sm">Rekapitulasi Keuangan</h4>
+                                <p className="text-xs text-gray-500">Omset: Cash <span className="font-bold text-emerald-600">{formatRupiah(tCash)}</span> | QRIS <span className="font-bold text-blue-600">{formatRupiah(tQris)}</span> | Transfer <span className="font-bold text-orange-600">{formatRupiah(tTransfer)}</span></p>
+                                <p className="text-xs text-gray-500">Laci (Fisik): Modal <span className="font-bold text-gray-700">{formatRupiah(modalLaci)}</span> + Cash <span className="font-bold text-emerald-600">{formatRupiah(tCash)}</span> - Keluar <span className="font-bold text-red-600">{formatRupiah(totalExpenseAmount)}</span> = Laci <span className="font-black text-slate-800">{formatRupiah(totalKasLaci)}</span></p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                             {isEditing ? (
                                 <div className="flex gap-2 w-full sm:w-auto">
                                     <input type="text" value={inputModal} onChange={e => setInputModal(formatThousand(e.target.value))} className="border-2 border-slate-200 px-3 py-1.5 text-sm rounded-xl outline-none w-32 text-right font-bold text-slate-700 focus:border-slate-500" placeholder="0" />
@@ -1509,11 +1553,12 @@
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
             const handleWA = () => { 
-                if (!data.customerPhone || data.customerPhone === '-' || data.customerPhone.trim() === '') {
+                const phoneStr = data.customerPhone != null ? String(data.customerPhone).trim() : '';
+                if (phoneStr === '' || phoneStr === '-') {
                     showAlert('Nomor WhatsApp pelanggan tidak diisi/tidak valid saat transaksi.', 'error');
                     return;
                 }
-                const phone = data.customerPhone.startsWith('0') ? '62' + data.customerPhone.slice(1) : data.customerPhone;
+                const phone = phoneStr.startsWith('0') ? '62' + phoneStr.slice(1) : phoneStr;
                 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Halo *${data.customer || 'Pelanggan'}*,\nBerikut rincian pesanan dari *${settings?.storeName || 'Barbershop'}*:\n\nNo. Antrean: *${data.queueNumber || '-'}*\nID Ref: *${data.id}*\nTotal Tagihan: *${formatRupiah(data.total || 0)}*\nStatus: *${data.status || '-'} ${data.paymentMethod && data.paymentMethod !== '-' ? `(${data.paymentMethod})` : ''}*\nProses: *${data.progressStatus || 'Baru Masuk'}*\nJadwal Booking: *${data.pickupDate ? new Date(data.pickupDate).toLocaleDateString('id-ID') : '-'}*\n\n_${settings?.receiptFooter || '*** TERIMA KASIH ***'}_`)}`,'_blank'); 
             };
 
@@ -1937,8 +1982,8 @@
                             </div>
                             {loginError && <div className="mb-4 p-3 bg-red-100/90 text-red-700 rounded-lg text-sm font-bold flex justify-center text-center gap-2 border border-red-200"><Icon name="XCircle" size={16} className="shrink-0 mt-0.5" /> <span>{loginError}</span></div>}
                             <form onSubmit={handleLogin} className="space-y-4">
-                                <input type="text" name="username" placeholder="Username / PIN Kasir" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
-                                <input type="password" name="password" placeholder="PIN / Password" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
+                                <input type="text" name="username" placeholder="Username" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
+                                <input type="password" name="password" placeholder="Password" required className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-emerald-400 outline-none bg-white/80 text-gray-800 placeholder-gray-500 font-medium" />
                                 <button type="submit" disabled={isDbLoading} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-lg border border-emerald-500/50 hover:shadow-emerald-500/50 transition-all">{isDbLoading ? 'Memproses...' : 'Login Kasir'}</button>
                             </form>
                         </div>
