@@ -15,6 +15,7 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         input[type="date"], input[type="time"] {
@@ -1603,6 +1604,50 @@
                 return txt;
             };
 
+            const handleShareImage = async () => {
+                const receiptEl = document.getElementById('receipt-content');
+                if (!receiptEl) return;
+
+                try {
+                    showAlert('Sedang memproses gambar struk...', 'info');
+                    // Render HTML menjadi Canvas (Gambar)
+                    const canvas = await html2canvas(receiptEl, { scale: 2, backgroundColor: '#fdfbf7' });
+                    canvas.toBlob(async (blob) => {
+                        if (!blob) {
+                            showAlert('Gagal membuat gambar.', 'error');
+                            return;
+                        }
+                        const file = new File([blob], `Struk_${data.id}.png`, { type: 'image/png' });
+                        const shareText = `Terima kasih! Berikut adalah struk transaksi Anda di *${settings?.storeName || 'Barbershop'}*.`;
+
+                        // Jika HP/Browser support fitur Share File (Android/iOS terbaru)
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    files: [file],
+                                    title: `Struk - ${data.id}`,
+                                    text: shareText
+                                });
+                            } catch (err) {
+                                console.log('Share dibatalkan', err);
+                            }
+                        } else {
+                            // Fallback jika dibuka di PC / browser lama: Langsung Download Gambar
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `Struk_${data.id}.png`;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                            showAlert('Gambar struk berhasil diunduh. Silakan kirim file tersebut via WA Web secara manual.', 'success');
+                        }
+                    }, 'image/png');
+                } catch (err) {
+                    console.error(err);
+                    showAlert('Gagal memproses gambar.', 'error');
+                }
+            };
+
             const handleShare = async () => {
                 const txt = generateReceiptText();
                 if (navigator.share) {
@@ -1702,11 +1747,12 @@
                     </div>
                     
                     <div className="p-4 bg-slate-50 grid grid-cols-2 gap-3 border-t border-slate-200 print:hidden shrink-0">
-                        <button onClick={handleWA} className="py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> Kirim WA</button>
+                        <button onClick={handleWA} className="py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> WA (Teks)</button>
+                        <button onClick={handleShareImage} className="py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> WA (Gambar)</button>
                         <button onClick={()=>window.print()} className="py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Printer" size={16}/> Cetak PDF</button>
-                        <button onClick={handleBluetoothPrint} className="py-3 bg-slate-800 hover:bg-slate-900 text-white col-span-2 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Bluetooth" size={16}/> Print Thermal (Bluetooth)</button>
+                        <button onClick={handleBluetoothPrint} className="py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Bluetooth" size={16}/> Print Thermal</button>
                         {isIOS && (
-                            <button onClick={handleShare} className="py-3 bg-blue-600 hover:bg-blue-700 text-white col-span-2 rounded-xl font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="FileText" size={16}/> Bagikan Teks Struk (Khusus iOS)</button>
+                            <button onClick={handleShare} className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white col-span-2 rounded-xl font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="FileText" size={16}/> Bagikan Teks Struk (Khusus iOS)</button>
                         )}
                         <button onClick={onClose} className="py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 col-span-2 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">Tutup Nota</button>
                     </div>
