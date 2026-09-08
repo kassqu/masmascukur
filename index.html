@@ -1737,7 +1737,7 @@
                 }
             };
 
-            return (
+            const modalContent = (
                 <div id="receipt-modal-wrapper" className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm">
                     <div id="receipt-modal-container" className="bg-white rounded-3xl w-full max-w-sm flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
                         
@@ -1802,22 +1802,27 @@
                         @media print { 
                             @page { margin: 0; }
                             body, html { background: white !important; margin: 0; padding: 0; height: auto !important; }
-                            header, main, nav { display: none !important; }
-                            #root > div { min-height: auto !important; }
                             
-                            /* Tampilkan struk aslinya saja, Reset Container Modal-nya */
-                            #receipt-modal-wrapper { position: absolute; top: 0; left: 0; right: 0; background: white !important; padding: 0 !important; align-items: flex-start; justify-content: flex-start; }
-                            #receipt-modal-container { max-height: none !important; max-width: 100% !important; border-radius: 0 !important; box-shadow: none !important; background: white !important; }
+                            /* 1. HILANGKAN SEMUA ELEMEN BACKGROUND */
+                            #root { display: none !important; }
                             
-                            /* Matikan fitur scroll dari bungkus luarnya */
-                            #receipt-content { padding: 0 !important; background: white !important; overflow: visible !important; }
+                            /* 2. TAMPILKAN HANYA PORTAL MODAL STRUK */
+                            #receipt-modal-wrapper { position: static !important; background: white !important; padding: 0 !important; display: block !important; align-items: flex-start; justify-content: flex-start; }
+                            #receipt-modal-container { max-height: none !important; max-width: 100% !important; border-radius: 0 !important; box-shadow: none !important; background: white !important; border: none !important; }
                             
-                            /* Sesuaikan konten aslinya */
+                            /* 3. SETEL KONTEN STRUK AGAR MENYESUAIKAN TINGGI KERTAS (TIDAK LEBIH / TIDAK ADA SPACE KOSONG) */
+                            #receipt-content { padding: 0 !important; background: white !important; overflow: visible !important; display: block !important; height: auto !important; }
                             #actual-receipt { padding: 5mm !important; border: none !important; box-shadow: none !important; max-width: 100% !important; margin: 0 !important; }
+                            
+                            /* 4. SEMBUNYIKAN TOMBOL KETIKA DIPRINT */
+                            .print\\:hidden { display: none !important; }
                         }
                     `}} />
                 </div>
             );
+
+            // GANTI CARA RENDER MENGGUNAKAN REACT PORTAL
+            return ReactDOM.createPortal(modalContent, document.body);
         }
 
         function NavItem({ icon, label, isActive, onClick }) {
