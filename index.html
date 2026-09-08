@@ -1458,7 +1458,7 @@
                                         <td className="p-4">
                                             <p className="font-bold text-slate-800">{t.customer || 'Pelanggan'}</p>
                                             <p className="text-[10px] text-slate-400 font-mono mt-0.5">{t.id}</p>
-                                            <span className="inline-block mt-1.5 bg-slate-200 text-slate-700 text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Antrean {t.queueNumber || '-'}</span>
+                                            <span className="inline-block mt-1.5 bg-slate-100 text-slate-700 text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Antrean {t.queueNumber || '-'}</span>
                                         </td>
                                         <td className="p-4 whitespace-nowrap">
                                             <p className="text-xs font-bold text-slate-700 mb-1"><span className="text-slate-400 font-medium">In:</span> {t.date ? new Date(t.date).toLocaleDateString('id-ID') : '-'}</p>
@@ -1605,13 +1605,20 @@
             };
 
             const handleShareImage = async () => {
-                const receiptEl = document.getElementById('receipt-content');
+                // Targetkan div bagian dalam yang tidak punya scrollbar agar hasil capture presisi
+                const receiptEl = document.getElementById('actual-receipt');
                 if (!receiptEl) return;
 
                 try {
-                    showAlert('Sedang memproses gambar struk...', 'info');
-                    // Render HTML menjadi Canvas (Gambar)
-                    const canvas = await html2canvas(receiptEl, { scale: 2, backgroundColor: '#fdfbf7' });
+                    showAlert('Sedang memproses gambar struk (HD)...', 'info');
+                    
+                    const canvas = await html2canvas(receiptEl, { 
+                        scale: 3, // Diperbesar supaya kualitasnya HD dan tidak buram
+                        backgroundColor: '#fdfbf7',
+                        useCORS: true, // Bantu render gambar dari URL luar
+                        logging: false
+                    });
+                    
                     canvas.toBlob(async (blob) => {
                         if (!blob) {
                             showAlert('Gagal membuat gambar.', 'error');
@@ -1620,7 +1627,6 @@
                         const file = new File([blob], `Struk_${data.id}.png`, { type: 'image/png' });
                         const shareText = `Terima kasih! Berikut adalah struk transaksi Anda di *${settings?.storeName || 'Barbershop'}*.`;
 
-                        // Jika HP/Browser support fitur Share File (Android/iOS terbaru)
                         if (navigator.canShare && navigator.canShare({ files: [file] })) {
                             try {
                                 await navigator.share({
@@ -1632,14 +1638,13 @@
                                 console.log('Share dibatalkan', err);
                             }
                         } else {
-                            // Fallback jika dibuka di PC / browser lama: Langsung Download Gambar
                             const url = URL.createObjectURL(blob);
                             const link = document.createElement('a');
                             link.href = url;
                             link.download = `Struk_${data.id}.png`;
                             link.click();
                             URL.revokeObjectURL(url);
-                            showAlert('Gambar struk berhasil diunduh. Silakan kirim file tersebut via WA Web secara manual.', 'success');
+                            showAlert('Gambar struk berhasil diunduh.', 'success');
                         }
                     }, 'image/png');
                 } catch (err) {
@@ -1665,12 +1670,19 @@
             };
 
             const handleBluetoothPrint = async () => {
-                if (isIOS && !navigator.bluetooth) {
-                    showAlert('INFO APPLE: iPhone/iPad memblokir fitur Bluetooth langsung dari Web Browser. Silakan gunakan opsi "Bagikan Teks Struk" lalu pilih aplikasi Sun Print / lainnya untuk mencetak.', 'error');
+                const txt = generateReceiptText();
+
+                if (/Android/i.test(navigator.userAgent)) {
+                    const rawbtUrl = `intent:${encodeURIComponent(txt)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
+                    window.location.href = rawbtUrl;
+                    showAlert('Mengirim ke printer... Pastikan aplikasi "RawBT" sudah terinstal dari Play Store.', 'info');
                     return;
                 }
 
-                const txt = generateReceiptText();
+                if (isIOS) {
+                    showAlert('INFO APPLE: iOS memblokir Bluetooth web. Silakan gunakan tombol "Bagikan Teks Struk" ke aplikasi printer Anda.', 'error');
+                    return;
+                }
 
                 try {
                     if (navigator.bluetooth) {
@@ -1703,22 +1715,16 @@
                                 for (let i = 0; i < dataArray.length; i += 256) {
                                     await printChar.writeValue(dataArray.slice(i, i + 256));
                                 }
-                                showAlert('Berhasil mencetak langsung ke ' + device.name, 'success');
+                                showAlert('Berhasil mencetak ke ' + device.name, 'success');
                                 return;
                             }
                         } catch (btErr) {
                             if(btErr.name !== 'NotFoundError') throw btErr;
                             return;
                         }
+                    } else {
+                        showAlert('Browser ini tidak mendukung Web Bluetooth.', 'error');
                     }
-
-                    const rawbtUrl = `intent:${encodeURIComponent(txt)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
-                    window.location.href = rawbtUrl;
-                    
-                    setTimeout(() => {
-                        showAlert('Jika pop-up tidak muncul, pastikan Anda menggunakan Google Chrome di Android.', 'info');
-                    }, 1000);
-                    
                 } catch (err) {
                     console.error(err);
                     showAlert('Gagal terhubung ke Printer: ' + err.message, 'error');
@@ -1726,53 +1732,85 @@
             };
 
             return (
-                <div id="receipt-modal-wrapper" className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm"><div id="receipt-modal-container" className="bg-white rounded-3xl w-full max-w-sm flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
-                    <div id="receipt-content" className="p-8 overflow-y-auto font-mono text-xs text-slate-800 bg-[#fdfbf7] custom-scroll">
-                        <div className="text-center mb-6">{settings?.logo&&<img src={settings.logo} className="w-16 h-16 mx-auto mb-2 object-contain bg-white rounded-full p-1 border border-dashed border-slate-300" />}<h2 className="font-black text-lg uppercase tracking-widest">{settings?.storeName || 'Barbershop'}</h2><p className="text-[10px] mt-1">{settings?.address || ''}</p><p className="text-[10px]">{settings?.phone || ''}</p></div>
-                        <div className="border-y-2 border-dashed border-slate-300 py-3 mb-4 space-y-1.5">
-                            <div className="flex justify-between items-center"><span className="text-sm font-black bg-slate-800 text-white px-2 py-0.5 rounded">ANTREAN: {data.queueNumber || '-'}</span><span className="text-[10px] text-slate-500">{data.id}</span></div>
-                            <div className="flex justify-between mt-2"><span>Tgl Nota:</span><span>{data.date ? new Date(data.date).toLocaleDateString('id-ID') : '-'}</span></div>
-                            <div className="flex justify-between"><span>Pelanggan:</span><span className="font-bold">{data.customer || 'Pelanggan'}</span></div>
-                            {data.pickupDate && <div className="text-center text-xs font-black text-slate-800 border-t-2 border-dashed border-slate-300 mt-3 pt-2">Jadwal: {new Date(data.pickupDate).toLocaleDateString('id-ID')}</div>}
+                <div id="receipt-modal-wrapper" className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200 backdrop-blur-sm">
+                    <div id="receipt-modal-container" className="bg-white rounded-3xl w-full max-w-sm flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
+                        
+                        {/* Wrapper luar untuk Scroll (biar tidak ikut ke-capture oleh html2canvas) */}
+                        <div id="receipt-content" className="flex-1 overflow-y-auto bg-gray-50 custom-scroll flex justify-center items-start p-4 md:p-6">
+                            
+                            {/* Inner Container: Ini yang akan di-capture jadi Gambar & di Print PDF */}
+                            <div id="actual-receipt" className="w-full max-w-sm bg-[#fdfbf7] shadow-sm border border-slate-200 p-6 md:p-8 font-mono text-xs text-slate-800 mx-auto">
+                                <div className="text-center mb-6">
+                                    {settings?.logo && <img src={settings.logo} crossOrigin="anonymous" className="w-16 h-16 mx-auto mb-2 object-contain bg-white rounded-full p-1 border border-dashed border-slate-300" />}
+                                    <h2 className="font-black text-lg uppercase tracking-widest">{settings?.storeName || 'Barbershop'}</h2>
+                                    <p className="text-[10px] mt-1">{settings?.address || ''}</p>
+                                    <p className="text-[10px]">{settings?.phone || ''}</p>
+                                </div>
+                                <div className="border-y-2 border-dashed border-slate-300 py-4 mb-4 space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <div className="[#fdfbf7] text-slate-800 px-3 py-1.5 rounded-lg inline-block">
+                                            <span className="text-xs font-black uppercase tracking-wider block leading-none">ANTREAN: {data.queueNumber || '-'}</span>
+                                        </div>
+                                        <span className="text-[10px] text-slate-500">{data.id}</span>
+                                    </div>
+                                    <div className="flex justify-between mt-3"><span>Tgl Nota:</span><span>{data.date ? new Date(data.date).toLocaleDateString('id-ID') : '-'}</span></div>
+                                    <div className="flex justify-between"><span>Pelanggan:</span><span className="font-bold">{data.customer || 'Pelanggan'}</span></div>
+                                    {data.pickupDate && <div className="text-center text-xs font-black text-slate-800 border-t-2 border-dashed border-slate-300 mt-3 pt-2">Jadwal: {new Date(data.pickupDate).toLocaleDateString('id-ID')}</div>}
+                                </div>
+                                <div className="space-y-3 mb-4">
+                                    {(data.items || []).map((i,x) => (
+                                        <div key={x}>
+                                            <div className="font-bold uppercase mb-1">{i.name}</div>
+                                            <div className="flex justify-between text-slate-600">
+                                                <span>{i.qty}x @ {formatRupiah(i.price)}</span>
+                                                <span>{formatRupiah(i.price * i.qty)}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="border-t-2 border-dashed border-slate-300 pt-3 space-y-1.5">
+                                    <div className="flex justify-between font-medium"><span>Subtotal</span><span>{formatRupiah((data.total || 0) + (data.discount || 0))}</span></div>
+                                    {data.discount > 0 && <div className="flex justify-between font-medium"><span>Diskon</span><span>-{formatRupiah(data.discount)}</span></div>}
+                                    <div className="flex justify-between font-black text-base mt-2 pt-2 border-t border-slate-200"><span>TOTAL</span><span>{formatRupiah(data.total || 0)}</span></div>
+                                    <div className="flex justify-between mt-4"><span>Status:</span><span className={`font-black uppercase ${data.status === 'Lunas' ? '' : 'text-slate-500'}`}>{data.status || '-'} {data.paymentMethod && data.status === 'Lunas' ? `(${data.paymentMethod})` : ''}</span></div>
+                                    {data.status === 'Lunas' && data.amountReceived > 0 && (<><div className="flex justify-between text-slate-500"><span>Diterima:</span><span>{formatRupiah(data.amountReceived)}</span></div><div className="flex justify-between text-slate-500"><span>Kembali:</span><span>{formatRupiah(data.change || 0)}</span></div></>)}
+                                </div>
+                                <div className="text-center mt-8 text-slate-600 font-bold whitespace-pre-wrap">{settings?.receiptFooter || '*** TERIMA KASIH ***'}</div>
+                            </div>
                         </div>
-                        <div className="space-y-3 mb-4">{(data.items || []).map((i,x)=><div key={x}><div className="font-bold uppercase">{i.name}</div><div className="flex justify-between text-slate-600 mt-0.5"><span>{i.qty}x @ {formatRupiah(i.price)}</span><span>{formatRupiah(i.price*i.qty)}</span></div></div>)}</div>
-                        <div className="border-t-2 border-dashed border-slate-300 pt-3 space-y-1.5">
-                            <div className="flex justify-between font-medium"><span>Subtotal</span><span>{formatRupiah((data.total || 0) + (data.discount || 0))}</span></div>
-                            {data.discount > 0 && <div className="flex justify-between font-medium"><span>Diskon</span><span>-{formatRupiah(data.discount)}</span></div>}
-                            <div className="flex justify-between font-black text-base mt-2 pt-2 border-t border-slate-200"><span>TOTAL</span><span>{formatRupiah(data.total || 0)}</span></div>
-                            <div className="flex justify-between mt-4"><span>Status:</span><span className={`font-black uppercase ${data.status === 'Lunas' ? '' : 'text-slate-500'}`}>{data.status || '-'} {data.paymentMethod && data.status === 'Lunas' ? `(${data.paymentMethod})` : ''}</span></div>
-                            {data.status === 'Lunas' && data.amountReceived > 0 && (<><div className="flex justify-between text-slate-500"><span>Diterima:</span><span>{formatRupiah(data.amountReceived)}</span></div><div className="flex justify-between text-slate-500"><span>Kembali:</span><span>{formatRupiah(data.change || 0)}</span></div></>)}
+                        
+                        {/* Area Tombol */}
+                        <div className="p-4 bg-white grid grid-cols-2 gap-3 border-t border-slate-200 print:hidden shrink-0 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] relative z-10">
+                            <button onClick={handleWA} className="py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> Kirim WA</button>
+                            <button onClick={handleShareImage} className="py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> WA (Gambar)</button>
+                            <button onClick={()=>window.print()} className="py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Printer" size={16}/> Cetak PDF</button>
+                            <button onClick={handleBluetoothPrint} className="py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Bluetooth" size={16}/> Print Thermal</button>
+                            {isIOS && (
+                                <button onClick={handleShare} className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white col-span-2 rounded-xl font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="FileText" size={16}/> Bagikan Teks Struk (Khusus iOS)</button>
+                            )}
+                            <button onClick={onClose} className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 col-span-2 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">Tutup Nota</button>
                         </div>
-                        <div className="text-center mt-8 text-slate-600 font-bold whitespace-pre-wrap">{settings?.receiptFooter || '*** TERIMA KASIH ***'}</div>
                     </div>
                     
-                    <div className="p-4 bg-slate-50 grid grid-cols-2 gap-3 border-t border-slate-200 print:hidden shrink-0">
-                        <button onClick={handleWA} className="py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> WA (Teks)</button>
-                        <button onClick={handleShareImage} className="py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="MessageCircle" size={16}/> WA (Gambar)</button>
-                        <button onClick={()=>window.print()} className="py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Printer" size={16}/> Cetak PDF</button>
-                        <button onClick={handleBluetoothPrint} className="py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="Bluetooth" size={16}/> Print Thermal</button>
-                        {isIOS && (
-                            <button onClick={handleShare} className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white col-span-2 rounded-xl font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"><Icon name="FileText" size={16}/> Bagikan Teks Struk (Khusus iOS)</button>
-                        )}
-                        <button onClick={onClose} className="py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 col-span-2 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">Tutup Nota</button>
-                    </div>
+                    <style dangerouslySetInnerHTML={{__html: `
+                        @media print { 
+                            @page { margin: 0; }
+                            body, html { background: white !important; margin: 0; padding: 0; height: auto !important; }
+                            header, main, nav { display: none !important; }
+                            #root > div { min-height: auto !important; }
+                            
+                            /* Tampilkan struk aslinya saja, Reset Container Modal-nya */
+                            #receipt-modal-wrapper { position: absolute; top: 0; left: 0; right: 0; background: white !important; padding: 0 !important; align-items: flex-start; justify-content: flex-start; }
+                            #receipt-modal-container { max-height: none !important; max-width: 100% !important; border-radius: 0 !important; box-shadow: none !important; background: white !important; }
+                            
+                            /* Matikan fitur scroll dari bungkus luarnya */
+                            #receipt-content { padding: 0 !important; background: white !important; overflow: visible !important; }
+                            
+                            /* Sesuaikan konten aslinya */
+                            #actual-receipt { padding: 5mm !important; border: none !important; box-shadow: none !important; max-width: 100% !important; margin: 0 !important; }
+                        }
+                    `}} />
                 </div>
-                <style dangerouslySetInnerHTML={{__html: `
-                    @media print { 
-                        @page { margin: 0; }
-                        body, html { background: white !important; margin: 0; padding: 0; height: auto !important; }
-                        /* Hapus semua space belakang / elemen yg tidak diprint */
-                        header, main, nav { display: none !important; }
-                        #root > div { min-height: auto !important; }
-                        
-                        /* Reset styling overlay modal */
-                        #receipt-modal-wrapper { position: absolute; top: 0; left: 0; right: 0; background: white !important; padding: 0 !important; align-items: flex-start; justify-content: flex-start; }
-                        #receipt-modal-container { max-height: none !important; max-width: 100% !important; border-radius: 0 !important; box-shadow: none !important; }
-                        
-                        /* Posisikan konten struk */
-                        #receipt-content { padding: 5mm !important; overflow: visible !important; }
-                    }
-                `}} /></div>
             );
         }
 
