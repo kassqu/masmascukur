@@ -245,8 +245,14 @@
             for (let i = 9; i <= 23; i++) {
                 const time1 = `${i.toString().padStart(2, '0')}:00`;
                 const time2 = `${i.toString().padStart(2, '0')}:20`;
+                const time3 = `${i.toString().padStart(2, '0')}:40`;
+                
                 timeSlots.push({ time: time1, available: !bookedTimesForDate.includes(time1) });
-                if (i !== 23) timeSlots.push({ time: time2, available: !bookedTimesForDate.includes(time2) });
+                
+                if (i !== 23) {
+                    timeSlots.push({ time: time2, available: !bookedTimesForDate.includes(time2) });
+                    timeSlots.push({ time: time3, available: !bookedTimesForDate.includes(time3) });
+                }
             }
 
             const activeQueue = (transactions || [])
@@ -298,7 +304,7 @@
                                `No. HP: *${customerPhone}*\n` +
                                `Layanan: *${service ? service.name : '-'}*\n` +
                                `Jadwal: *${pickupDate} Jam ${pickupTime}*\n` +
-                               `Estimasi Durasi: *15 - 20 Menit*\n\n` +
+                               `Estimasi Durasi: *± 20 Menit*\n\n` +
                                `Mohon disiapkan, terima kasih!`;
                 
                 window.open(`https://wa.me/${cleanAdminPhone}?text=${encodeURIComponent(waText)}`, '_blank');
@@ -333,7 +339,7 @@
                             <div className="relative z-10 flex flex-col items-center">
                                 <Icon name="Scissors" size={48} className="mb-4 drop-shadow-md text-emerald-200"/>
                                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-widest drop-shadow-lg mb-4">Ganteng Maksimal!</h2>
-                                <p className="text-emerald-50 text-sm md:text-base max-w-md mx-auto mb-6">Booking jadwal cukur kamu sekarang. Cek jadwal yang masih tersedia di bawah (Durasi per sesi ± 15-20 menit).</p>
+                                <p className="text-emerald-50 text-sm md:text-base max-w-md mx-auto mb-6">Booking jadwal cukur kamu sekarang. Cek jadwal yang masih tersedia di bawah (Durasi per sesi ± 20 menit).</p>
                                 <a href="#booking" className="bg-white text-emerald-900 px-8 py-3.5 rounded-2xl font-black uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all">Booking Sekarang</a>
                             </div>
                         </div>
@@ -1613,7 +1619,7 @@
                     showAlert('Sedang memproses gambar struk (HD)...', 'info');
                     
                     const canvas = await html2canvas(receiptEl, { 
-                        scale: 3, // Diperbesar supaya kualitasnya HD dan tidak buram
+                        scale: 2, // Diperbesar supaya kualitasnya HD dan tidak buram
                         backgroundColor: '#fdfbf7',
                         useCORS: true, // Bantu render gambar dari URL luar
                         logging: false
