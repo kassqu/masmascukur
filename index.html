@@ -1135,6 +1135,9 @@
             const [isCartMobileOpen, setIsCartMobileOpen] = useState(false); 
             const [selectedCategory, setSelectedCategory] = useState('Semua');
             const [additionalDiscount, setAdditionalDiscount] = useState('');
+            
+            // STATE BARU: Untuk fitur Dropdown Pelanggan
+            const [showDropdown, setShowDropdown] = useState(false);
 
             useEffect(() => { 
                 if (editingTrx) { 
@@ -1154,6 +1157,25 @@
                 const matchCategory = selectedCategory === 'Semua' || (p && p.category === selectedCategory);
                 return matchSearch && matchCategory;
             });
+
+            // LOGIKA BARU: Data unik pelanggan untuk Dropdown
+            const uniqueCustomers = (transactions || []).reduce((acc, curr) => {
+                if (curr.customer && !acc.find(c => c.phone === curr.customerPhone)) {
+                    acc.push({ name: curr.customer, phone: curr.customerPhone || '-' });
+                }
+                return acc;
+            }, []);
+
+            const filteredCustomers = uniqueCustomers.filter(c =>
+                c.name.toLowerCase().includes(customerName.toLowerCase()) || 
+                c.phone.includes(customerName)
+            );
+
+            const handleSelectCustomer = (cust) => {
+                setCustomerName(cust.name);
+                setCustomerPhone(cust.phone !== '-' ? cust.phone : '');
+                setShowDropdown(false);
+            };
 
             const addToCart = (product) => { setCart(cart.find(i => i.id === product.id) ? cart.map(i => i.id === product.id ? { ...i, qty: (parseFloat(i.qty) || 0) + 1 } : i) : [...cart, { ...product, qty: 1 }]); };
             const updateQty = (id, delta) => { setCart(cart.map(i => { if (i.id === id) { const n = (parseFloat(i.qty) || 0) + delta; return n > 0 ? { ...i, qty: n } : null; } return i; }).filter(Boolean)); };
@@ -1281,7 +1303,37 @@
                                         {trxId && <button onClick={cancelEdit} className="text-red-500 text-xs font-bold uppercase tracking-wider bg-red-50 px-2 py-1 rounded"><Icon name="XCircle" size={14} className="inline mr-1"/> Batal</button>}
                                     </div>
                                     <div className="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                                        <input type="text" placeholder="Nama Pelanggan" value={customerName} onChange={e=>setCustomerName(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-slate-700" />
+                                        {/* UI BARU: Input Nama yang digabung Dropdown */}
+                                        <div className="relative">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Nama Pelanggan" 
+                                                value={customerName} 
+                                                onChange={e => {
+                                                    setCustomerName(e.target.value);
+                                                    setShowDropdown(true);
+                                                }}
+                                                onFocus={() => setShowDropdown(true)}
+                                                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                                                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-slate-700" 
+                                                autoComplete="off"
+                                            />
+                                            {showDropdown && customerName && filteredCustomers.length > 0 && (
+                                                <ul className="absolute z-50 w-full bg-white border border-slate-200 shadow-xl rounded-xl mt-1 max-h-40 overflow-y-auto custom-scroll">
+                                                    {filteredCustomers.map((cust, idx) => (
+                                                        <li 
+                                                            key={idx} 
+                                                            onClick={() => handleSelectCustomer(cust)}
+                                                            className="px-3 py-2 hover:bg-emerald-50 cursor-pointer border-b border-slate-100 last:border-0 flex justify-between items-center transition-colors"
+                                                        >
+                                                            <span className="font-bold text-slate-800 text-sm">{cust.name}</span>
+                                                            <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{cust.phone}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+
                                         <input type="text" placeholder="No. WA (0812...)" value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-slate-700" />
                                         <div className="flex items-center gap-2 bg-white px-3 py-2 border border-slate-200 rounded-xl text-sm"><Icon name="CalendarDays" size={16} className="text-emerald-500"/><span className="text-slate-600 text-xs flex-1 font-bold">Jadwal:</span><input type="date" value={pickupDate} onChange={e=>setPickupDate(e.target.value)} className="outline-none text-right font-bold cursor-pointer bg-transparent text-slate-800" /></div>
                                     </div>
