@@ -1161,14 +1161,14 @@
             // LOGIKA BARU: Data unik pelanggan untuk Dropdown
             const uniqueCustomers = (transactions || []).reduce((acc, curr) => {
                 if (curr.customer && !acc.find(c => c.phone === curr.customerPhone)) {
-                    acc.push({ name: curr.customer, phone: curr.customerPhone || '-' });
+                    acc.push({ name: curr.customer, phone: String(curr.customerPhone || '-') });
                 }
                 return acc;
             }, []);
 
             const filteredCustomers = uniqueCustomers.filter(c =>
-                c.name.toLowerCase().includes(customerName.toLowerCase()) || 
-                c.phone.includes(customerName)
+                String(c.name || '').toLowerCase().includes(String(customerName || '').toLowerCase()) || 
+                String(c.phone || '').includes(String(customerName || ''))
             );
 
             const handleSelectCustomer = (cust) => {
